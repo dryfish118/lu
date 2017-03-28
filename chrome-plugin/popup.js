@@ -14,7 +14,7 @@ function aquireInfo() {
     //     $("#user-name").html(h);
     // });
 
-    var l = "http://127.0.0.1/sample.json";
+    var l = "http://127.0.0.1/www/lu/sample.json";
     //l = "https://user.lu.com/user/service/user/current-user-info-for-homepage";
     $.ajax({
         url: l,

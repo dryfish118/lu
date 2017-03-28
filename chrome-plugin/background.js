@@ -12,7 +12,7 @@ chrome.browserAction.onClicked.addListener(function() {
     var d = "jsoncallback=";
     var l = u + "?" + d + "?";
     //{"unreadMsgCount":0,"cardBindStatus":"1","uid":28160626,"nameAuthentication":"1","sex":"M","name":"邓涛","mobileNo":"18511478118","userName":"dengtao118","isNewUser":false,"isInvestPrepared":true}
-    l = "http://127.0.0.1/sample.json";
+    l = "http://127.0.0.1/www/lu/sample.json";
     $.ajax({
         url: l,
         dataType: "json",
