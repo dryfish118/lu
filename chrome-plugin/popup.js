@@ -14,8 +14,9 @@ function aquireInfo() {
     //     $("#user-name").html(h);
     // });
 
-    var l = "http://127.0.0.1/www/lu/sample.json";
+    var l = "http://127.0.0.1/sample.json";
     //l = "https://user.lu.com/user/service/user/current-user-info-for-homepage";
+    //{"unreadMsgCount":0,"cardBindStatus":"1","uid":28160626,"nameAuthentication":"1","sex":"M","name":"閭撴稕","mobileNo":"18511478118","userName":"dengtao118","isNewUser":false,"isInvestPrepared":true}
     $.ajax({
         url: l,
         dataType: "json",

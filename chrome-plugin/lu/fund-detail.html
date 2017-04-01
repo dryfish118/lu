@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>我的零活宝T+0 - 我的帐户 - 平安陆金所</title>
+    <meta name="keywords" content="">
+    <meta name="description" content=>
+    <meta name="WT.pn_sku" content="">
+    <meta name="WT.page_name" content="">
+    <meta name="WT.tx_i" content="">
+    <meta name="WT.tx_s" content="">
+    <meta name="WT.register_name" content="">
+    <link rel="shortcut icon" href="//static.lufaxcdn.com/config/images/favicon-new.ico" />
+    <link type="text/css" rel="stylesheet" href="//static.lufaxcdn.com/lufax-public/base/base.1abb9c4d.css" />
+    <link rel="stylesheet" href="//static.lufaxcdn.com/lufax-components/lufax-components.d2f7d012.css">
+    <link type="text/css" rel="stylesheet" href="//static.lufaxcdn.com/lufax-public/lufax-public/lufax-public.94ee6782.css" />
+    <link type="text/css" rel="stylesheet" href="//static.lufaxcdn.com/lufax-public/lufax-lib/lufax-lib.717f0a66.css" />
+    <script type="text/javascript">
+        ! function(t, e) {
+            "function" == typeof define && define.amd ? define([], e) : "object" == typeof exports ? module.exports = e() : t.BrowserCat = e()
+        }(this, function() {
+            function t(t, e) {
+                for (var n in e) e.hasOwnProperty(n) && (t[n] = e[n]);
+                return t
+            }
+
+            function e(t) {
+                s.addEventListener ? s.addEventListener("load", t, !1) : s.attachEvent && s.attachEvent("onload", t)
+            }
+
+            function n(t) {
+                function e() {
+                    o || (o = !0, t())
+                }
+
+                function n() {
+                    if (!o) try {
+                        d.documentElement.doScroll("left"), e()
+                    } catch (t) {
+                        setTimeout(n, 10)
+                    }
+                }
+                var o = !1;
+                if (d.addEventListener) d.addEventListener("DOMContentLoaded", e, !1);
+                else if (d.attachEvent) {
+                    try {
+                        var a = null != s.frameElement
+                    } catch (t) {}
+                    d.documentElement.doScroll && !a && n(), d.attachEvent("onreadystatechange", function() {
+                        "complete" === d.readyState && e()
+                    })
+                }
+            }
+
+            function o() {
+                this.timing = {}
+            }
+
+            function a(t) {
+                this.options = t, this.performance = new o;
+                var e = this;
+                s.onerror = function(t, n, o, a, r) {
+                    var d = {
+                        file: i(n),
+                        msg: i(t),
+                        refer: i(s.location.href),
+                        line: o,
+                        columnNumber: a,
+                        error: r && (i(r.stack) || i(r.toString()))
+                    };
+                    e.error({
+                        msg: t,
+                        data: d
+                    })
+                }
+            }
+            var r = !!window.performance,
+                i = encodeURIComponent,
+                d = document,
+                s = window,
+                c = [
+                    [1, "redirectEnd", "redirectStart"],
+                    [4, "domainLookupEnd", "domainLookupEnd"],
+                    [5, "connectEnd", "connectStart"],
+                    [6, "connectEnd", "secureConnectStart"],
+                    [7, "responseStart", "requestStart"],
+                    [8, "responseEnd", "responseStart"],
+                    [10, "domInteractive", "domLoading"],
+                    [9, "domComplete", "domLoading"],
+                    [13, "requestStart", "navigationStart"],
+                    [14, "responseStart", "navigationStart"],
+                    [15, "domContentLoadedEventStart", "navigationStart"],
+                    [16, "loadEventStart", "navigationStart"],
+                    [17, "headComplete", "navigationStart"],
+                    [18, "firstScreenComplete", "navigationStart"]
+                ];
+            r || (c = [
+                [15, "onDomReady", "headStart"],
+                [16, "onPageLoaded", "headStart"],
+                [17, "headComplete", "headStart"],
+                [18, "firstScreenComplete", "headStart"]
+            ]);
+            var f = o.prototype;
+            f.mark = function(t) {
+                this.timing[t] = +new Date
+            };
+            var m = a.prototype;
+            m.enableSpeedReport = function(t) {
+                if (t) {
+                    this.config({
+                        pageId: t
+                    });
+                    var o = this;
+                    r || n(function() {
+                        o.performance.mark("onDomReady")
+                    }), e(function() {
+                        o.onLoad()
+                    })
+                }
+            }, m.onLoad = function() {
+                r || this.performance.mark("onPageLoaded"), this.report()
+            }, m.report = function() {
+                var e = this.measure();
+                this.send(t(this.getDefaultSpeedParams(), {
+                    speedparams: i(e)
+                }), "speed")
+            }, m.config = function(e) {
+                this.options = t(this.options, e)
+            }, m.getDefaultSpeedParams = function() {
+                return {
+                    v: 2,
+                    t: +new Date,
+                    w: this.options.pageId
+                }
+            }, m.measure = function() {
+                var t, e, n, o, a = [];
+                for (e = 0; e < c.length; e++) t = c[e], n = this.getTimeByName(t[2]), o = this.getTimeByName(t[1]), "number" == typeof n && "number" == typeof o && a.push(t[0] + "-" + (o - n));
+                return a.join("\t")
+            }, m.getTimeByName = function(t) {
+                var e;
+                return r ? (e = performance.timing[t], "number" != typeof e && (e = this.performance.timing[t])) : e = this.performance.timing[t], e;
+                var e
+            }, m.getDefaultLogParams = function() {
+                return {
+                    v: 1,
+                    l: "DEV",
+                    msg: "",
+                    data: "",
+                    id: "",
+                    t: +new Date
+                }
+            }, m.log = function(e) {
+                var n = this.getDefaultLogParams();
+                if ("object" == typeof e) {
+                    if (t(n, e), n.data) try {
+                        n.data = JSON.stringify(n.data)
+                    } catch (t) {}
+                    this.send(n, "log")
+                }
+            }, m.send = function(t, e) {
+                var n = [];
+                for (var o in t) t.hasOwnProperty(o) && n.push(o + "=" + t[o]);
+                var a = this.options.url;
+                "log" == e ? a += "/js" : "speed" == e && (a += "/speed"), a && ((new Image).src = a + "?" + n.join("&"))
+            };
+            for (var u, p = ["error", "warn", "info", "dev"], h = 0; h < p.length - 1; h++) u = p[h], m[u] = function(t) {
+                return function(e) {
+                    e = e || {}, e.l = t.toUpperCase(), e.module && (e.n = e.module, delete e.module), this.log(e)
+                }
+            }(u);
+            return a.instance = new a({
+                url: "//mcat.lu.com/wbroker-service/api"
+            }), a.instance
+        });
+        BrowserCat.performance.mark('headStart')
+    </script>
+
+    <link rel="stylesheet" type="text/css" href="https://static.lufaxcdn.com/my/css/yeb.64065677.css">
+
+    <script type="text/javascript">
+        document.domain = 'lu.com';
+    </script>
+    <script type="text/javascript">
+        BrowserCat.performance.mark('headComplete');
+    </script>
+</head>
+
+<body>
+    <div class="lufax-header" id="lufax-header">
+        <div class="top-wrap">
+            <div class="top-body clearfix">
+                <ul class="top-login-status clearfix top-login hidden" id="top-login">
+                    <li>您好，
+                        <a href="//my.lu.com/my/account" class="user-name"></a>
+                        <span class="msg-tips">
+                        <a class="my-account my-msg" id="my-account" href="//my.lu.com/my/user-msg" target="_blank">
+                            <i class="icon-msg"></i>
+                            <span id="header-my-account" data-sk="头部-消息">消息</span>
+                        <span id="header-my-msg-panel" class="msg-wrap hidden"> <span id="msg-count"></span> </span>
+                        </a>
+                        <p class="kyc-invest-tips hidden">
+                            <i class="tips-arrow"></i> 您有投资项目已完成电话确认。
+                            <a href="//my.lu.com/my/user-msg" target="_blank" data-sk="InvestContinue">立即查看 </a>
+                            <i class="tips-close"></i>
+                        </p>
+                        </span>
+                        <span class="safe-logout-wrap">| <a href="//user.lu.com/user/logout" id="safe-logout">安全退出</a></span>
+                    </li>
+                </ul>
+                <ul class="top-login-status clearfix top-cookie hidden" id="top-cookie">
+                    <li id="header-cookie-home-icon" class="home-icon">
+                        <a href="//www.lu.com/"></a>
+                    </li>
+                    <li class="top-cookie">您好，
+                        <a id="header-cookie-name" href="//user.lu.com/user/login" class="cookie-name" data-sk="头部-用户名"></a> <a id="header-cookie-login" href="//user.lu.com/user/login?returnPostURL=http%3A%2F%2Fwww.lu.com%2F" data-sk="头部-登录"> 登录 </a><span class="seperator">|</span><a id="header-cookie-register" href="//user.lu.com/user/register"
+                            data-sk="头部-注册">注册</a></li>
+                </ul>
+                <ul class="top-login-status clearfix top-noLog hidden" id="top-noLog">
+                    <li class="top-noLog">您好，欢迎来到陆金所！ <a id="header-nolog-login" href="//user.lu.com/user/login?returnPostURL=http%3A%2F%2Fwww.lu.com%2F" data-sk="头部-登录">登录</a><span class="seperator">|</span><a id="header-nolog-register" href="//user.lu.com/user/register"
+                            data-sk="头部-注册">注册</a></li>
+                </ul>
+                <ul class="media-link clearfix">
+                    <li><a id="header-lumi" href="//lumi.lu.com/lumi/index" target="_blank" data-sk="头部-会员俱乐部">会员俱乐部</a></li>
+                    <li class="lumi-link"><a id="header-vip" href="//vip.lu.com/vip" target="_blank" data-sk="头部-VIP非凡会">VIP非凡会</a></li>
+                    <li><a id="header-luzixun" href="http://www.lzx-hw.com/" target="_blank" data-sk="头部-陆金所咨询">陆金所咨询</a></li>
+                    <!--<li><a id="header-chongjinsuo" href="//list.lu.com/list/chongjinsuo" target="_blank"  data-sk="头部-重金所">重金所</a></li>-->
+                    <!--<li><a id="header-qianjiaosuo" href="//list.lu.com/list/qianjiaosuo" target="_blank"  data-sk="头部-前交所">前交所</a></li>-->
+                    <li><a id="header-help-center" href="//www.lu.com/help/" target="_blank" data-sk="头部-帮助中心">帮助中心</a></li>
+                    <li><a href="http://www.10100000.com/daikuan/lfx-index.html?utm_source=LFXHK011-LUFAX-pc&utm_medium=CPS&utm_campaign=FILTER2.1&WT.mc_id=CXX-WXDLUFAXHK-011-pc-LFX-3in1&" target="_blank" data-sk="头部-借款">借款</a></li>
+                    <li><a href="http://www.zhong.com" target="_blank" data-sk="头部-众筹">众筹</a></li>
+                    <li class="ljf_nav"><a href="//www.lup2p.com/lup2p/" target="_blank" data-sk="头部-陆金服">陆金服
+                    <b class="lup2pnav-down-arrow"></b></a>
+                        <ul>
+                            <li><a href="https://qhzx.pingan.com.cn/cust/rmgs/jigou/jg-index.html" target="_blank" data-sk="头部-p2p合作">p2p合作</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li id="header-mobile-panel" class="mobile-link"><a id="header-mobile" href="//www.lu.com/activity/app201307/index.html" target="_blank" data-sk="头部-手机版"><i class="icon-mobile"></i>手机版</a></li>
+                    <li id="header-weibo-panel" class="weibo-link"><a id="header-weibo" href="http://e.weibo.com/lufax" target="_blank"><i id="header-weibo-icon" class="icon-weibo">&nbsp;</i></a></li>
+                    <li id="header-weixin-panel" class="weixin">
+                        <a id="header-weixin" href="javascript:void(0);"><i id="header-weixin-icon" class="icon-weixin">&nbsp;</i></a>
+                        <p><b></b><span class="lufax-code weixin-code"></span></p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="head-body-wrap">
+            <div class="head-body clearfix">
+
+                <div id="header-body-logo-panel" class="logo">
+                    <a href="//www.lu.com/">
+                        <img src="https://static.lufaxcdn.com/wcm-images/UcuCOdQ4bJE5qGwNvDRIBA.jpg" alt="" />
+                    </a>
+                </div>
+                <div id="header-body-slogan-panel" class="slogan"> <img src="https://static.lufaxcdn.com/wcm-images/Pu40SMbLYuUshPdIniOwsQ.png" alt="" />
+                </div>
+                <div id="header-body-my-account-panel" class="my-account-menu">
+                    <ul>
+                        <li class="my-account"><a href="//my.lu.com/my/account" target="_blank" data-sk="头部-我的账户"><span>我的账户</span><span class="icon-arrow transition"></span></a></li>
+                        <li><a href="//my.lu.com/my/investment-all-v2" target="_blank" data-sk="myaccount_myinvest"><span>我的理财</span></a></li>
+                        <li><a href="//e.lufunds.com/jijin/my" target="_blank" data-sk="myaccount_myfund"><span>我的基金</span></a></li>
+                        <li>
+                            <a href="//my.lu.com/my/insurance" class="insurance-old-link hidden" target="_blank" data-sk="myaccount_insurance"><span>我的保单</span></a>
+                            <a href="//insurance.lu.com/insurance/insurance" class="insurance-new-link" target="_blank" data-sk="myaccount_insurance"><span>我的保单</span></a>
+                        </li>
+                        <li><a href="//my.lu.com/my/transaction-history" target="_blank" data-sk="myaccount_cashdetail"><span>资金记录</span></a></li>
+                        <li><a href="//my.lu.com/my/bank-account" target="_blank" data-sk="myaccount_card"><span>银行卡管理</span></a></li>
+                        <li><a href="//my.lu.com/my/my-lufax-coin" target="_blank" data-sk="myaccount_coin"><span>我的投资券</span></a></li>
+                        <li><a href="//lumi.lu.com/lumi/my-lumi-world" target="_blank" data-sk="myaccount_goods"><span>我的商品</span></a></li>
+                        <li><a href="//my.lu.com/my/user-info" target="_blank" data-sk="myaccount_security"><span>账户安全</span></a></li>
+                        <li><a href="//affiliate.lu.com/invite-friends" target="_blank" data-sk="myaccount_invitefriends"><span>邀请好友</span></a></li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <script type="text/template" id="lumi-link-logo-tpl">
+        <div class="lumi-link-logo">
+            <span class="head-logo-wlt"><img src="//static.lufaxcdn.com/lufax-components/img/head-logo-wlt.cdcd6208.png" alt="" /></span>
+            <p class="lumi-logo-tips"><i></i>本站由万里通提供技术支持</p>
+        </div>
+    </script>
+    <!--悬浮新手首投专享优惠开始-->
+
+    <div class="wrap_levitate">
+        <div class="levitate">
+            <img src="//static.lufaxcdn.com/lufax-components/img/levitat.06d2ffb6.png" alt="" />
+            <a href="javascript:;" class="new-user-tips"></a>
+        </div>
+    </div>
+    <!--悬浮新手首投专享优惠结束-->
+    <div id="lufax-navigator" class="lufax-navigator">
+
+        <ul id="lufax-navigator-main" class="main-nav clearfix">
+            <li id="lufax-navigator-main-home" class="nav-home"><a href="//www.lu.com" data-sk="top_navigation_home">首页</a></li>
+            <li id="lufax-navigator-main-huoqi" class="nav-huoqi">
+                <a href="//list.lu.com/list/huoqi" data-sk="top_navigation_current">活期<span>(<em class="nav-huoqi-all-page"></em>)</span> </a>
+            </li>
+            <li id="lufax-navigator-main-dingqi" class="nav-dingqi">
+                <a href="//list.lu.com/list/dingqi" data-sk="top_navigation_regular">定期 <span>(<em class="nav-dingqi-all-page"></em>)</span> </a>
+            </li>
+            <li id="lufax-navigator-main-p2p" class="nav-p2p">
+                <a href="//www.lup2p.com/lup2p/" data-sk="top_navigation_P2P" target="_blank">网贷<span>(<em class="nav-p2p-all-page"></em>)</span></a>
+                <!--<i class="insurance-icon"></i>-->
+            </li>
+            <li id="lufax-navigator-main-fund" class="nav-fund">
+                <a href="//e.lufunds.com/jijin/list" data-sk="top_navigation_jijin" target="_blank">基金 <span>(<em class="nav-fundChannel-all-page"></em>)</span></a>
+            </li>
+            <li id="lufax-navigator-main-gaoduanlicai" class="nav-gaoduanlicai has-sub-nav" sub-menu="sub-nav-High">
+                <a href="//trust.lu.com/trust/index" data-sk="top_navigation_gaoduan">高端理财 <span>(<em class="nav-gaoduanlicai-all-page"></em>)</span>
+                <b class="nav-down-arrow"></b>
+            </a>
+            </li>
+            <li id="lufax-navigator-main-baoxian" class="nav-insurances">
+                <a href="//insurance.lu.com/insurance/baoxian/index" data-sk="top_navigation_insurance" class="nav-special">保险 <span>(<em class="nav-baoxian-all-page"></em>)</span> </a>
+            </li>
+            <li id="lufax-navigator-main-xinshou" class="nav-xinshou">
+                <a href="//list.lu.com/list/xinshou" data-sk="top_navigation_xinke">新手专区 <span>(<em class="nav-xinke-all-page"></em>)</span></a>
+            </li>
+            <li id="lufax-navigator-main-transfer" class="nav-transfer has-sub-nav" sub-menu="sub-nav-transfer">
+                <a href="//list.lu.com/list/bxt" data-sk="top_navigation_transfer" id="nav-transfer">会员交易区<span>(<em class="nav-transfer-all-page"></em>)</span>
+                <b class="nav-down-arrow"></b>
+            </a>
+            </li>
+        </ul>
+
+        <div class="lufax-sub-nav sub-nav-High hidden" parent-menu="gaoduanlicai">
+            <ul class="sub-nav-list clearfix">
+                <li class="nav-xintuozhiying">
+                    <a href="//trust.lu.com/trust/index" data-sk="top_navigation_xintuo" class="sub-nav-first">信托直营<span>(<em class="nav-trust-all-page"></em>)</span>
+                    <b class="nav-up-arrow"></b>
+                </a>
+                </li>
+                <li class="nav-simujijin"><a href="//pe.lufunds.com/pe/index" data-sk="top_navigation_simu">私募基金<span>(<em class="nav-transfer-pe-all-page"></em>)</span></a></li>
+                <li class="nav-quanshanglicai"><a href="//s.lufunds.com/securities/index" data-sk="top_navigation_securities" target="_blank">资管计划理财<span>(<em class="nav-transfer-securities-all-page"></em>)</span></a></li>
+                <li class="nav-haiwai"><a href="//list.lu.com/list/haiwai" data-sk="top_navigation_haiwai">海外投资<span>(<em class="nav-haiwai-all-page"></em>)</span></a></li>
+            </ul>
+        </div>
+        <div class="lufax-sub-nav sub-nav-transfer hidden" parent-menu="transfer">
+            <ul class="sub-nav-list clearfix">
+                <li class="nav-bianxiantong">
+                    <a href="//list.lu.com/list/bxt" data-sk="top_navigation_bxt" class="sub-nav-first">稳盈-变现通<span>(<em class="nav-bianxiantong-all-page"></em>)</span>
+                    <b class="nav-up-arrow"></b>
+                </a>
+                </li>
+                <li class="nav-dingqiTransfer">
+                    <a href="//list.lu.com/list/transfer-dingqi" data-sk="top_navigation_regular_transfer">定期转让<span>(<em class="nav-transfer-dingqi-all-page"></em>)</span>
+                </a>
+                </li>
+                <li class="nav-p2pTransfer">
+                    <a href="//list.lu.com/list/transfer-p2p" data-sk="top_navigation_p2p_transfer">P2P转让<span>(<em class="nav-transfer-p2p-all-page"></em>)</span>
+                </a>
+                </li>
+                <li class="nav-hxTransfer">
+                    <a href="//list.lu.com/list/transfer-r02" data-sk="top_navigation_hx_transfer">汇享计划<span>(<em class="nav-transfer-hx-all-page"></em>)</span>
+                </a>
+                </li>
+                <li class="nav-r030cur">
+                    <a href="//list.lu.com/list/r030" data-sk="top_navigation_r030_transfer">稳盈-e享计划<span>(<em class="nav-transfer-r030-all-page"></em>)</span>
+
+                </a>
+                </li>
+
+
+
+            </ul>
+        </div>
+        <div class="lufax-sub-nav sub-nav-insurances hidden" parent-menu="insurances">
+            <ul class="sub-nav-list clearfix">
+                <li class="nav-baoxian">
+                    <a href="//list.lu.com/insurance/baoxian/index" data-sk="top_navigation_insurance-security" class="sub-nav-first">保障型保险<span>(<em class="nav-baoxian-all-page"></em>)</span>
+                    <b class="nav-up-arrow"></b>
+                </a>
+                </li>
+                <li class="nav-insurance">
+                    <a href="//list.lu.com/insurance/index" data-sk="top_navigation_insurance-finance">理财型保险<span>(<em class="nav-insurance-all-page"></em>)</span></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="gray-wrapper">
+        <div id="acount_wrap" class="main-wide-wrap clearfix apply-main new-width">
+            <input id="current-page" value="my-account" type="hidden" data-page-name="我的账户">
+            <input id="userId" value="28160626" type="hidden">
+            <input id="plHostUrl" value="http://pl.lu.com/pl" type="hidden">
+            <ul class="breadcrumb">
+                <li><a href="http://www.lu.com">陆金所首页</a> <span class="divider">&gt;</span></li>
+                <li><a href="/my/account">我的账户</a>
+                    <span class="divider">&gt;</span> </li>
+                <li>
+                    <a href="/my/investment-all-v2"></a>
+                </li>
+                <li>
+                    <a href="/my/loans"></a>
+                </li>
+                <li>
+                    <a href="/my/transaction-history"></a>
+                </li>
+                <li class="active"><span class="light_word">我的零活宝T+0</span></li>
+            </ul>
+
+            <div class="my-account-wide-wrap">
+                <div class="left-menu-container">
+                    <ul class="left-menu">
+                        <li class="menu-user-info">
+                            <div class="count-info clearfix">
+                                <a class="user-pic-container item" href="//user.lu.com/user/safeimage">
+                                    <div class="user-pic" data-sk="myaccount_face">
+                                        <img src="" width="80px" height="80px" />
+                                    </div>
+                                    <div class="overlay">
+                                    </div>
+                                </a>
+                                <div class="user-txt-container item">
+                                    <div class="menu-user-name"></div>
+                                    <div class="menu-user-list clearfix">
+                                        <div class="menu-member-leval" title="会员身份"></div>
+                                        <div class="menu-grade-name" style="display:none">--</div>
+                                    </div>
+
+                                    <div>账户安全：<span class="menu-security-leval"></span></div>
+                                </div>
+                            </div>
+                            <div class="user-icon-container">
+                                <!--<a class="name-verify" href="" target="_blank"><i class="ld-icon ld-icon-user-info item"></i></a>
+                <a class="card-verify" href="" target="_blank"><i class="ld-icon ld-icon-bankcard item"></i></a>
+                <a class="tradepassword-verify" href="" target="_blank"><i class="ld-icon ld-icon-safe-shield item"></i></a>
+                <a class="security-verify" href="" target="_blank"><i class="ld-icon ld-icon-umbrella item"></i></a>-->
+                                <a class="name-verify" href="" target="_blank"><i class="ld-icon item">&#xEA1D;</i></a>
+                                <a class="card-verify" href="" target="_blank"><i class="ld-icon item">&#xEA1A;</i></a>
+                                <a class="tradepassword-verify" href="" target="_blank"><i class="ld-icon item">&#xEA1B;</i></a>
+                                <a class="security-verify" href="" target="_blank"><i class="ld-icon item">&#xEA1C;</i></a>
+                                <a class="jianguo-verify" href="" target="_blank"><i class="ld-icon item">&#xEA20;</i></a>
+                            </div>
+                        </li>
+                        <li class="menu-title menu-overview $!accountOverViewSelected">
+                            <a class="dt no-sub" href="//my.lu.com/my/account"><span>账户总览</span></a>
+                        </li>
+                        <li class="menu-licai">
+                            <a class="dt no-sub" href="//my.lu.com/my/investment-all-v2" data-sk="left_navigation_myinvest"><span>我的理财</span></a>
+                        </li>
+                        <li class="menu-jijin">
+                            <a class="dt no-sub" href="//e.lufunds.com/jijin/my" data-sk="left_navigation_myfund"><span>我的基金</span></a>
+                        </li>
+
+                        <li class="menu-insurance $!myInsurance">
+                            <a class="dt no-sub insurance-old-link hidden" href="//my.lu.com/my/insurance" data-sk="left_navigation_insurance"><span>我的保单</span></a>
+                            <a class="dt no-sub insurance-new-link" href="//insurance.lu.com/insurance/insurance" data-sk="left_navigation_insurance"><span>我的保单</span></a>
+                        </li>
+                        <li class="menu-bookingList">
+                            <a class="dt no-sub" href="//my.lu.com/my/booking/list"><span>我的预约</span></a>
+                        </li>
+                        <li class="menu-investmentGroup">
+                            <a class="dt no-sub" href="//my.lu.com/my/investment-group"><span>我的组合投资</span></a>
+                        </li>
+                        <li class="menu-investments-current $!investmentsCurrent">
+                            <a class="dt" href="javascript:;"><span>e享/汇享/变现</span><i class="ld-icon ld-icon-chevron-right"></i></a>
+                            <div class="sub-menu">
+
+                                <a class="dd" href="//my.lu.com/my/my-buy-back?pageNum=1" data-sk="left_navigation_Exiang">我的e享计划</a>
+                                <a class="dd" href="//my.lu.com/my/huixiang-my-buy-back" data-sk="left_navigation_hx">汇享计划</a>
+                                <a class="dd" href="//my.lu.com/my/pledge-loans?pageNum=1" data-sk="left_navigation_pledgeloan">我的变现</a>
+                            </div>
+                        </li>
+                        <li class="menu-investmentLoan">
+                            <a class="dt no-sub" href="//my.lu.com/my/loans/1?pageLimit=10" data-sk="left_navigation_loan"><span>我的借款</span></a>
+                        </li>
+
+                        <li class="menu-fund-current $!fundCurrent">
+                            <a class="dt" href="javascript:;"><span>资金记录</span><i class="ld-icon ld-icon-chevron-right"></i></a>
+                            <div class="sub-menu">
+                                <a class="dd" href="//my.lu.com/my/transaction-history" data-sk="left_navigation_cashdetail">资金明细</a>
+                                <a class="dd" href="//my.lu.com/my/recharge-records" data-sk="left_navigation_recharge/take">充值/取现记录</a>
+                            </div>
+                        </li>
+                        <li class="sep"></li>
+
+                        <li class="menu-auto-invest $!myAutoInvest">
+                            <a class="dt no-sub" href="//my.lu.com/my/auto-investment" data-sk="left_navigation_autoinvest"><span>自动投资</span></a>
+                        </li>
+                        <li class="sep"></li>
+
+                        <li class="menu-lufax-coin $!lufaxCoinIsCurrent">
+                            <a class="dt no-sub" href="//my.lu.com/my/my-lufax-coin" data-sk="left_navigation_coin"><span>我的投资券</span></a>
+                        </li>
+
+                        <li class="menu-lufax-lumi">
+                            <a class="dt no-sub" href="//lumi.lu.com/lumi/my-lumi-world" data-sk="left_navigation_goods"><span>我的商品</span></a>
+                        </li>
+                        <li class="sep"></li>
+
+                        <li class="menu-bank-account $!bankAccountSelected">
+                            <a class="dt no-sub" href="//my.lu.com/my/bank-account" data-sk="left_navigation_bankcard"><span>银行卡管理</span></a>
+                        </li>
+
+                        <li class="menu-user-info-safe $!userinfoSelected">
+                            <a class="dt no-sub" href="//my.lu.com/my/user-info" data-sk="left_navigation_security"><span>账户安全</span></a>
+                        </li>
+
+                        <li class="menu-user-msg $!userMsgSelected">
+                            <a class="dt no-sub" href="//my.lu.com/my/user-msg" data-sk="left_navigation_mymessage"><span>我的消息</span></a>
+                        </li>
+                        <li class="sep"></li>
+                        <li class="last-child menu-my-recommend">
+                            <a class="dt" href="javascript:;"><span>推荐好友</span><i class="ld-icon ld-icon-chevron-right"></i></a>
+                            <div class="sub-menu">
+                                <a class="dd" href="//affiliate.lu.com/invite-friends" data-sk="left_navigation_personalinvite">个人邀请</a>
+                                <a class="dd" href="//promo.lu.com/activity-pages/gzfnyb-20160520/index.html" target="_blank">果汁分你一半</a>
+                                <a class="dd" href="//affiliate.lu.com/mkt/senior-recommend/senior-main-page" data-sk="left_navigation_communityinvite">社群邀请</a>
+                            </div>
+                        </li>
+                        <li class="last-child menu-user-grade" style="display:none">
+                            <a class="dt no-sub" href="//vip.lu.com/vip/member-grade"><span>会员权益</span></a>
+                        </li>
+                    </ul>
+                </div>
+
+
+                <form action="javascript:;">
+                    <input id="current-page" type="hidden" value="login" data-page-name="我的账户" />
+                    <input id="plHostUrl" type="hidden" value="http://pl.lu.com/pl">
+                </form>
+
+                <input id="needNewContractConfirmed" type="hidden" value="false">
+
+                <input id="upgradeStatus" type="hidden" value="">
+                <input id="lboProductNameConfigure" type="hidden" value='零活宝T+0' />
+
+                <div class="yeb-fundDetail-wrap">
+
+                    <div class="fund-box clearfix">
+                        <div class="fund-box-title-wrap">
+                            <span class="fund-box-title">零活宝T+0</span>
+                            <span class="lujinbao-data-information">数据来源：平安大华基金  数据日期：<span id="benifitDate"></span></span>
+                            <a href="//ljbao.lu.com/yeb/open" data-sk="account_ljb_manage_introduce" target="_blank">产品介绍</a>
+                        </div>
+
+                        <div class="fund-box-content-wrap">
+                            <div class="total-balance-wrap balance-wrap">
+                                <div class="balance-title">
+                                    总金额（元）
+                                </div>
+                                <div class="total-balance-amount balance-amount">
+                                    14,786.16
+                                </div>
+                                <div class="transfer-in-out-wrap">
+                                    <a class="transfer-in-link" href="https://cashier.lu.com/cashier/lujinbao/transfer-in-step-one" target="_blank">申购</a>
+                                    <i></i>
+                                    <a class="transfer-out-link" href="https://cashier.lu.com/cashier/lujinbao/transfer-out" data-sk="account_ljb_manage_out" target="_blank">赎回</a>
+                                </div>
+                            </div>
+
+                            <div class="available-balance-wrap balance-wrap">
+                                <div class="balance-title">
+                                    可用金额（元）
+                                </div>
+                                <div class="balance-amount">
+                                    14,786.16
+                                </div>
+
+                            </div>
+
+                            <div class="frozen-balance-wrap balance-wrap">
+                                <div class="balance-title">
+                                    冻结金额（元）
+                                </div>
+                                <div class="balance-amount">
+                                    0.00
+                                </div>
+                                <div class="frozen-detail-link-wrap">
+                                    <a href=/my/yeb/frozen-records data-sk="account_ljb_manage_dongjiedetail" target="_blank">
+                        明细
+                    </a>
+                                </div>
+                            </div>
+
+                            <div class="interest-information-display">
+                                <div class="interest-title-wrap">
+                                    <span class="interest-title">累计收益(元)</span>
+                                    <span class="interest-title">七日年化收益率</span>
+                                </div>
+                                <div class="interest-data-wrap">
+                                    <span class="interest-data">13.19</span>
+                                    <span class="interest-data interest-data-right-one" id="sevenday"></span>%
+                                </div>
+                                <div class="interest-title-wrap">
+                                    <span class="interest-title">每万份收益(元)</span>
+                                </div>
+                                <div class="interest-data-wrap">
+
+                                    <span class="interest-data interest-data-right" id="benifitThound"></span><span></span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    <div class="open-amount-transfer-ljb clearfix">
+                        <div class="open-amount-transfer-ljb-auto-image">
+                            <span>自动赚</span>
+                        </div>
+                        <div class="open-amount-transfer-ljb-label">
+                            <div class="open-amount-transfer-ljb-left">
+
+                                <div class="open-amount-transfer-ljb-label-title">余额自动申购零活宝T+0</div>
+                                <div class="ljb-tips-wrapper">
+                                    <div class="set-save-amount ">
+                                        自动保留待还款 <em>(若您有待还款，系统将自动保留需要还款的金额在帐户余额)</em><a href="https://ljbao.lu.com/yeb/reserve-amount" target="_blank">设置</a>
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+                            <div class="open-amount-transfer-ljb-opt">
+
+                                <a class="opt close-auto" value="0" href="javascript:;">关闭</a>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class=" list-project J_ljbBox hidden">
+                        <p class="list-title"><span>回款进零活宝T+0功能即将下线，已经开通的部分不受影响，新购买的产品不再支持继续开通，您可选择余额自动申购零活宝T+0</span></p>
+
+                        <div class="summarise clearfix">
+                            <strong class="ljbnum">已开通项目数量：<span id="J_openLJbNum"></span></strong>
+                            <a class="list-down hidden J_toggleList" href="javascript:;">显示项目列表<i class="list-icon"></i></a>
+                        </div>
+                        <div class="J_toggleBox listbox">
+                            <table class="list-table">
+
+                                <thead>
+                                    <tr>
+                                        <th class="productName">项目名称/编号</th>
+                                        <th class="dateName">起息日</th>
+                                        <th class="list-align">投资金额(元)</th>
+                                        <th>预计下期收款日</th>
+                                        <th class="list-align">预计下期收款额(元)</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="J_ljbTabel">
+
+                                </tbody>
+                            </table>
+                            <div class="ljbtFooter clearfix">
+                                <div id="yebFundDetailPagination" class="ljbpagination ui_complex_pagination" style="width:800px;"></div>
+                                <div id="yebFundDetailPaginationInfo" class="pagination-info"></div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <p class="list-title"><span>资金明细</span></p>
+                    <div class="tab-content-wrap-yeb">
+                        <div class="tabnav clearfix">
+                            <ul>
+                                <li class="cur" attr-type="income" data-sk="account_ljb_manage_cashdetail_profit">收益</li>
+                                <li attr-type="in" data-sk="account_ljb_manage_cashdetail_in">投资</li>
+                                <li attr-type="out" data-sk="account_ljb_manage_cashdetail_out">赎回</li>
+                            </ul>
+                        </div>
+
+                        <div class="tab-list clearfix">
+                            <table class="list-table fundDtail yeb-jitable">
+                                <thead>
+                                    <tr>
+                                        <th>时间</th>
+                                        <th class="cashName">金额</th>
+                                        <th class="comments">备注</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="yebFundDetailProfit">
+                                    <!--无数据-->
+                                    <!--<tr>
+                    <td colspan="3">
+                        <div class="no-project"><i class="icon minusCircleIcon">&nbsp;</i><span class="tips">您暂时没有最近的资金记录</span></div>
+                    </td>
+                </tr>-->
+                                    <!--有数据-->
+
+
+                                </tbody>
+                            </table>
+                            <div class="tFooter clearfix">
+                                <div class="download-wrap"></div>
+                                <div class="cpagination ui_complex_pagination"></div>
+                                <div class="pagination-info" id="profitpage"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="noticeQuestion_horizontal_wrap clearfix">
+                    <div class="noticeQuestion noticeQuestion_horizontal">
+                        <div class="head clearfix">
+                            <h3 class="title">常见问题</h3>
+                            <span class="more">
+                        <a target="_blank" href="http://www.lufax.com/help">更多</a><span>&gt;</span>
+                            </span>
+                        </div>
+                        <ul class="contentList">
+                            <li>
+                                <b></b>
+                                <a target="_blank" title="什么是零活宝T+0服务？" href="https://www.lu.com/help/help_issue_ljb_answer_01.html">什么是零活宝T+0服务？</a>
+                            </li>
+                            <li>
+                                <b></b>
+                                <a target="_blank" title="“零活宝T+0”服务有哪些优势和特点？" href="https://www.lu.com/help/help_issue_ljb_answer_02.html">“零活宝T+0”服务有哪些优势和特点？</a>
+                            </li>
+                            <li>
+                                <b></b>
+                                <a target="_blank" title="使用“零活宝T+0”服务申购或赎回货币基金是否需要收取申购费或者其他费用？" href="https://www.lu.com/help/help_issue_ljb_answer_03.html">使用“零活宝T+0”服务申购或赎回货币基金是否需要收取申购费或者其他费用？</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="noticeQuestion_horizontal_ad">
+                        <a href="https://www.lu.com/about/aboutus.html" title="" target="_blank"><img src="https://static.lufaxcdn.com/wcm-images/SvpnIuhDwC0R0l-CoooyrA.jpg" alt="" /></a>
+                    </div>
+                </div>
+
+                <textarea id="yebFundDetailProfitTemplate" class="hidden">
+    {if model.totalCount > 0}
+    {for fundDetail in model.fundDetails}
+    <tr class="${fundDetail.className}">
+        <td>${fundDetail.createdAt}</td>
+        <td class="cashData">${fundDetail.transactionAmount}</td>
+        <td class="commentsData" title="${fundDetail.remark}"><p class="limitWidth">${fundDetail.remark}</p></td>
+    </tr>
+    {/for}
+    {else}
+    <tr>
+        <td colspan="3">
+            <div class="no-project"><i class="icon minusCircleIcon">&nbsp;</i><span class="tips">您暂时没有最近的资金记录</span></div>
+        </td>
+    </tr>
+    {/if}
+</textarea>
+
+                <div id="amountAutoBuyLjbContent" class="hidden">
+                    <div class="amount-auto-buy-ljb-content-title">系统提示</div>
+                    <div class="amount-auto-buy-ljb-content-body">您确定要关闭自动申购零活宝T+0吗？关闭后，账户余额将不再自动申购零活宝T+0。</div>
+                    <div class="amount-auto-buy-ljb-content-footer"></div>
+                </div>
+
+
+
+                <div id="yebpop" class="hidden">
+                    <div id="contractVmDiv" class="modal-dialog popup_wrap yeb_agreement_cen">
+                        <div class="modal-content">
+                            <div class="modal-header clearfix">
+                                <h4 class="modal-title">提示</h4>
+                            </div>
+                            <div class="modal-body">
+                                <p class="yeb_agreement_title"><strong>零活宝T+0服务</strong></p>
+                                <span class="message">零活宝T+0服务已升级，当前可支持稳盈-安e和2015年2月12日之后起息的富盈人生项目开通收款购买零活宝T+0。
+签署此新协议后，您的稳盈-安e和富盈人生项目也可以赚取额外收益。</span>
+                            </div>
+                            <div class="yeb_agreement_con">
+                                <p class="yeb_h1">零活宝T+0服务协议</p>
+                                <p>零活宝T+0服务协议（以下简称"本协议"）是上海陆家嘴国际金融资产交易市场股份有限公司（以下简称"陆金所"）与陆金所用户（以下简称"您"或"投资人"）就零活宝T+0服务相关事项所订立的协议。</p>
+                                <p class="yeb_h2">一、声明与承诺</p>
+                                <p>1.本协议已对与您的权益有或可能具有重大关系的条款，及对陆金所具有或可能具有免责或限制责任的条款用粗体字予以标注，请您注意。您确认，在您接受本服务之前，您已充分阅读、理解并接受本协议的全部内容，一旦您通过勾选或点击"同意"选框或按钮的形式签署本协议和/或使用本服务，即意味着您已充分理解本协议所有条款的含义及相应的法律后果，同意与本协议相对方以数据电文形式订立本协议并接受本协议约束。</p>
+                                <p>2.您同意，陆金所有权随时对本协议内容进行单方面的变更，并通过在陆金所网站（www.lu.com）以包括但不限于公告等方式予以公布/告知，无需另行单独通知您。若您在本协议内容公告变更后继续使用本服务，表示您已充分阅读、理解并接受修改后的协议内容，也将遵循修改后的协议内容使用本服务。若您不同意修改后的协议内容，您应停止使用本服务。</p>
+                                <p>3.在您同意接受本协议时，您是具有法律规定的完全民事权利能力和民事行为能力，能够独立承担民事责任的、持有有效中华人民共和国(香港、澳门、台湾地区除外)身份证且年满18周岁的陆金所用户。不具备前述条件的，您应立即终止注册或停止使用本服务。如后续在身份核实过程中，经查实您不符合本条款约定要求的，即使您已注册/使用本服务，陆金所均有权单方终止此项服务，并不负有任何法律责任。</p>
+
+                                <p class="yeb_h2">二、 定义</p>
+                                <p>除本协议另有规定外，下列用语具有如下含义：</p>
+                                <p>零活宝T+0服务：指陆金所为投资者、金融机构（包括但不限于保险公司、银行、基金公司、证券公司等）、第三方支付公司提供的交易辅助服务，包括但不限于交易资料传递服务、交易指令传递服务、交易记录管理服务及交易签约辅助服务等。</p>
+                                <p>陆金所用户：指在陆金所网站完成注册且进行实名认证及绑定银行卡的陆金所个人会员。</p>
+
+                                <p class="yeb_h2">三、 零活宝T+0服务的内容</p>
+                                <p>1. 交易资料传递服务</p>
+                                <p>投资者通过点击确认或者通过勾选或点击"同意"选框或按钮的形式签署本协议的，视为投资者授权陆金所将投资者的身份认证信息（包括但不限于投资者的姓名、性别、证件类型、证件号码、证件有效期、电子邮箱、手机号码等）传递给金融机构及/或第三方支付机构用于申请开立金融机构及/或第三方支付机构的账户。</p>
+                                <p>陆金所根据投资者的授权将上述身份认证信息传递给金融机构及/或第三方支付机构用于申请金融机构及/或第三方支付机构的账户，并将金融机构及/或第三方支付机构是否同意该开户申请的信息传递给投资者。</p>
+                                <p>2.交易指令传递服务</p>
+                                <p>投资者授权陆金所将交易指令（包括但不限于申购指令、赎回指令等）传递给金融机构及/或第三方支付机构，陆金所根据投资者的授权将上述交易指令传递给金融机构及/或第三方支付机构，并将金融机构及/或第三方支付机构反馈的信息传递给投资者。</p>
+                                <p>投资者在陆金所平台上选择开通"定期自动使用零活宝T+0服务"的，视为投资者不可撤销地授权陆金所在投资者收到其已投资的"稳盈-安e"项目每月正常还款（暂不包括提前还款、代偿还款）、富盈人生项目到期收益的同时，向金融机构及/或第三方支付机构传递申购申请的交易指令。</p>
+                                <p>3.交易记录管理服务</p>
+                                <p>陆金所向投资者提供交易记录管理服务，陆金所将根据投资者的交易指令及金融机构及/或第三方支付机构反馈的信息对交易记录进行调整，投资者可以通过陆金所平台查询资金明细、金额等信息。</p>
+                                <p>4.交易签约辅助服务</p>
+                                <p>陆金所根据投资者、金融机构及/或第三方支付机构的授权，向投资者提供与金融机构及/或第三方支付机构的签约辅助服务。</p>
+
+                                <p class="yeb_h2">四、投资者的承诺及授权</p>
+                                <p>1．投资人承诺其为符合中华人民共和国法律法规规定的年满18周岁、具有完全民事权利能力和民事行为能力的中华人民共和国大陆居民。</p>
+                                <p>2．投资者承诺将根据陆金所的服务费用标准缴纳服务费用。</p>
+                                <p>3．您确认并不可撤销地授权陆金所，除非法律另有规定：</p>
+                                <p>（1）将您提交的资料的内容、信息用于与本服务及将来的与陆金所有关的所有业务中；</p>
+                                <p>（2）使用您的信息作陆金所日后产品推广之用，包括但不限于与陆金所指定之业务伙伴交换相关信息之用； </p>
+                                <p>（3）从陆金所获取您提供的任何信息、您的金融机构及/或第三方支付机构账户信息、您与陆金所之间存在的任何协议及您在该等协议项下的履约情况、您的行为数据等(以下统称"您的个人信息")，无论该等信息获取行为发生在过去、现在还是将来；</p>
+                                <p>（4）将您提供给平安集团的信息、享受平安集团服务产生的信息（包括但不限于本协议签署之前、本协议履行过程中及本协议终止后提供和/或产生的信息）以及平安集团根据本条约定查询、收集的信息，用于平安集团及其因服务必要委托的合作伙伴为您提供服务、推荐产品、开展市场调查与信息数据分析；且</p>
+                                <P>（5）基于为您提供更优质服务和产品的目的，向平安集团因服务必要开展合作的伙伴查询、收集、提供您的信息。为确保您信息的安全，陆金所对上述信息负有保密义务，并采取各种措施保证信息安全。</P>
+                                <p class="yeb_h2">五、服务费用</p>
+                                <p>陆金所有权向投资者收取服务费并自主决定收费的种类、标准及收费方式。陆金所将以在网站发布公告的形式发布及变更收费种类、标准及收费方式，该公告一经发布即生效，投资者在公告发布后继续使用零活宝T+0服务的即被视为确认接受收费种类、标准及收费方式，并承诺按时缴费。</p>
+                                <p class="yeb_h2">六、通知</p>
+                                <p>关于本协议条款和其他协议、告示或其他有关使用零活宝T+0服务的通知，陆金所将以在网站发布公告方式通知。</p>
+                                <p>投资者同意陆金所有权根据国家法律法规及业务需要对本协议内容进行调整，调整后的协议将在陆金所网站上进行公布，一旦公布立即生效，无需另行通知投资者。如果投资者不接受该项调整，可向陆金所申请终止本协议项下服务。如投资者继续使用零活宝T+0服务的即被视为接受本协议的调整。</p>
+                                <p class="yeb_h2">七、法律适用</p>
+                                <p>本协议之效力、解释、变更、执行与争议解决均适用中华人民共和国法律。因本协议引起的或与本协议有关的争议，均应依照中华人民共和国法律予以处理，投资者可与陆金所进行协商。协商不成的，任何一方均有权提起诉讼，并以陆金所住所地人民法院作为管辖法院。</p>
+                                <p class="yeb_h2">八、特别提示</p>
+                                <p>陆金所仅根据投资者的同意及授权提供零活宝T+0服务，并不对金融机构及/或第三方支付机构的服务及投资标的的收益及资金到账时间做任何承诺。</p>
+
+                            </div>
+                            <div class="modal-footer">
+                                <a id="agreeBtn" class="btns btn_info ml20 confirmBtn" href="javascript:;">我同意</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+    <div id="lufax-footer" class="lufax-footer simple-foot clearfix">
+        <div class="footer clearfix">
+            <div class="contactbox">
+                <i></i>
+                <p class="call-message">
+                    <a href="//common.lu.com/common/cs/chat" target="_blank" class="call-online-service" data-sk="onlineCustmer_homePage">24小时在线客服</a>
+                </p>
+            </div>
+            <p class="wechat"> <img src="https://static.lufaxcdn.com/wcm-images/yKs_gAqvG4-HDoclSGvfrw.jpg" alt="" />
+            </p>
+            <p id="footer-copyright" class="copyright">
+                版权所有 © 上海陆家嘴国际金融资产交易市场股份有限公司未经许可不得复制、转载或摘编，违者必究!
+                <br> Copyright Shanghai Lujiazui International Financial Asset Exchange Co.,LTD. ALL Rights Reserved
+                <br> 沪 ICP 证 B2-20120023号   沪 ICP 备 12032241 号-7 &nbsp;&nbsp;<a id="footer-icp" href="https://www.sgs.gov.cn/lz/licenseLink.do?method=licenceView&entyId=dov73ne26zbqq0ildti0q39gru6x2zu3va" target="_blank">联系信息详情请点击</a>
+            </p>
+        </div>
+    </div>
+    <script type="text/javascript">
+        BrowserCat.enableSpeedReport(11);
+        BrowserCat.enableSpeedReport(12);
+        BrowserCat.enableSpeedReport(13);
+        BrowserCat.enableSpeedReport(14);
+        BrowserCat.performance.mark('firstScreenComplete');
+    </script>
+    <script type="text/javascript">
+        var Global = {};
+        Global.pageLimit10 = 10;
+        Global.pageLimit15 = 15;
+
+        Global.basePath = "/my";
+
+        Global.beBasePath = "http://ies-be.paic.com.cn/be-cs/my";
+
+        Global.plHttpsHostUrl = "https://pl.lu.com/pl"
+
+        Global.yebHostUrl = "https://ljbao.lu.com/yeb"
+
+        Global.tradingHostUrl = "https://trading.lu.com/trading"
+
+        Global.listHostUrl = "https://list.lu.com/list";
+
+        Global.insuranceHostUrl = "https://insurance.lu.com/insurance";
+
+        Global.userHostUrl = "https://user.lu.com/user";
+
+        Global.plHostUrl = "http://pl.lu.com/pl";
+
+        Global.mainSiteHostUrl = "http://www.lu.com";
+
+        Global.cashierHostUrl = "https://cashier.lu.com/cashier";
+
+        Global.layoutJsPath = "";
+
+        Global.lufaxBaseDomain = "lu.com";
+
+        Global.staticBasePath = "https://static.lufaxcdn.com/my";
+        Global.lboHostUrl = "http://lbo.lufax.app/lbo-app";
+    </script>
+    <script type="text/javascript" src="//static.lufaxcdn.com/lufax-public/jquery/jquery.ed07cc96.js"></script>
+    <script type="text/javascript" src="//static.lufaxcdn.com/lufax-components/lufax-components.ed02526c.js"></script>
+    <script type="text/javascript" src="//static.lufaxcdn.com/lufax-public/lufax-lib/lufax-lib.bf30faf2.js"></script>
+    <script type="text/javascript" src="//static.lufaxcdn.com/lufax-public/lufax-public/lufax-public.9aa6e319.js"></script>
+
+    <script type="text/javascript" src="https://static.lufaxcdn.com/my/js/base/base.f84a2380.js"></script>
+    <script type="text/javascript" src="https://static.lufaxcdn.com/my/js/base/be-head.df41ee47.js"></script>
+
+    <!-- 页面自己的JS所在位子 -->
+    <script type="text/javascript" src="https://static.lufaxcdn.com/my/js/my/yeb/fundDetail.4de48fa9.js"></script>
+    <script type="text/javascript" src="https://static.lufaxcdn.com/my/js/my/migrate/migrate.fb61e8b4.js"></script>
+
+    <script type="text/javascript" src="//static.lufaxcdn.com/lufax-public/statistic/statistic.9a599d27.js"></script>
+    <!-- put int <head> tag-->
+
+    <script language="javascript" type="text/javascript">
+        function loadWTScript(a, b) {
+            var c = document.createElement("script");
+            c.type = "text/javascript",
+                c.async = !0,
+                c.src = a,
+                dcsReady(c, b),
+                document.getElementsByTagName("head")[0].appendChild(c)
+        }
+
+        function dcsReady(a, b) {
+            a.readyState ? a.onreadystatechange = function() {
+                ("loaded" == a.readyState || "complete" == a.readyState) && (a.onreadystatechange = null, b())
+            } : a.onload = function() {
+                b()
+            }
+        }
+        loadWTScript(window.location.protocol.indexOf('https:') == 0 ? 'https://pa-ssl.pingan.com/app_js/sdc/prd/sdc9.js' : 'http://www.pingan.com/app_js/sdc/prd/sdc9.js', function() {
+            if (typeof(_tag) != "undefined") {
+                _tag.dcsid = "dcsxqgp7nakqoagskruioagxc_1k3h"; //dcsid参数用于设置日志记录在哪个文件里
+                _tag.DCSext.platform = "lu"; //按需要修改成不同的平台名称，例如toa
+                var s = _tag.dcsGetIdAsync();
+                if (s)
+                    dcsReady(s, function() {
+                        _tag.dcsCollect()
+                    });
+                else
+                    _tag.dcsCollect();
+            }
+        })
+    </script>
+    <div style="display: none">
+        <noscript>
+        <div style="display:inline;">
+            <img height="1" width="1" style="border-style:none;" alt="" src="//googleads.g.doubleclick.net/pagead/viewthroughconversion/1005340584/?value=0&guid=ON&script=0"/>
+        </div>
+    </noscript>
+        <script type="text/javascript">
+            /* <![CDATA[ */
+            var google_conversion_id = 1005340584;
+            var google_custom_params = window.google_tag_params;
+            var google_remarketing_only = true;
+            /* ]]> */
+        </script>
+        <script type="text/javascript" src="//www.googleadservices.com/pagead/conversion.js"></script>
+    </div>
+
+</body>
+
+</html>

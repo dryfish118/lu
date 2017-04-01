@@ -7,8 +7,6 @@
         "notifications", "tabs", "http://*/*", "https://*/*"
     ],
     "background": { //background script即插件运行的环境
-        //"page": "background.html"
-        //"scripts": ["scripts/jquery-3.2.0.min.js", "scripts/background.js"] //数组.chrome会在扩展启动时自动创建一个包含所有指定脚本的页面
         "scripts": ["jquery-3.2.0.min.js", "background.js"]
     },
     "browser_action": { //插件加载后生成图标
@@ -18,7 +16,14 @@
     }
     // "content_scripts": [{ //对页面内容进行操作的脚本
     //     "matches": ["http://*/*", "https://*/*"], //满足什么条件执行该插件 
-    //     "js": ["scripts/jquery-3.2.0.min.js", "scripts/js.js"],
-    //     "run_at": "document_start" //在document加载时执行该脚本
+    //     "js": ["jquery-3.2.0.min.js", "js.js"]
+    //         //"run_at": "document_end" //在document加载时执行该脚本
+    // }]
+    // "content_scripts": [{
+    //     //"matches": ["https://*.lu.com/*"],
+    //     //"matches": ["https://*/r030*"],
+    //     "matches": ["https://*/*"],
+    //     //"js": ["jquery.js", "js.js"],
+    //     "js": ["jquery-3.2.0.min.js", "js.js"]
     // }]
 }

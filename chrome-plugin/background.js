@@ -1,29 +1,57 @@
-function popMsg(msg) {
-    new Notification(0, {
-        icon: "lu.png",
-        body: msg
+function failGet(msg) {
+    console.log(msg);
+}
+
+function onList() {
+
+}
+
+function onFundDetail(data) {
+    //console.log(data);
+    var doc = $(data);
+    var amount = doc.find(".available-balance-wrap > .balance-amount").get(0);
+    if (amount == undefined) {
+        failGet("failed to get available amount");
+        return;
+    }
+    var availableMoney = parseFloat($(amount).text().replace(',', ''));
+    console.log("available money:\t%f", availableMoney);
+
+    onList(availableMoney - 1000, availableMoney);
+}
+
+function onUserInfo(data) {
+    if (data.userName == undefined) {
+        failGet("failed to get user information.");
+        return;
+    }
+    console.log("user id:\t%d", data.uid);
+    console.log("user name:\t%s", data.userName);
+
+    var fundDetailLink = "https://my.lu.com/my/yeb/fund-detail";
+    $.ajax({
+        url: fundDetailLink,
+        dataType: "html",
+        success: function(data) {
+            onFundDetail(data);
+        },
+        error: function() {
+            failGet("failed to get fund detail");
+        }
     });
 }
 
 chrome.browserAction.onClicked.addListener(function() {
-    //popMsg("我被点击了");
-    //document.domain = "www.lu.com";
-    var u = "https://user.lu.com/user/service/user/current-user-info-for-homepage";
-    var d = "jsoncallback=";
-    var l = u + "?" + d + "?";
     //{"unreadMsgCount":0,"cardBindStatus":"1","uid":28160626,"nameAuthentication":"1","sex":"M","name":"邓涛","mobileNo":"18511478118","userName":"dengtao118","isNewUser":false,"isInvestPrepared":true}
-    l = "http://127.0.0.1/www/lu/sample.json";
+    var userInfoLink = "https://user.lu.com/user/service/user/current-user-info-for-homepage";
     $.ajax({
-        url: l,
+        url: userInfoLink,
         dataType: "json",
         success: function(data) {
-            var h = "<div>名字：" + data.name + "</div>" +
-                "<div>账号：" + data.userName + "</div>" +
-                "<div>电话：" + data.mobileNo + "</div>";
-            popMsg(h);
+            onUserInfo(data);
         },
         error: function() {
-            popMsg("failed to get username");
+            failGet("failed to get user information.");
         }
     });
 });
