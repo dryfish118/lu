@@ -2,26 +2,101 @@ function failGet(msg) {
     console.log(msg);
 }
 
-function onList() {
+function onList(baseRate, minM, maxM) {
+    var fundDetailLink = "https://list.lu.com/list/r030";
+    $.ajax({
+        url: fundDetailLink,
+        dataType: "html",
+        data: {
+            orderType: "R030_INVEST_RATE",
+            orderAsc: "true",
+            minMoney: "" + minM,
+            maxMoney: "" + maxM
+        },
+        success: function(data) {
+            var doc = $(data);
+            var productList = doc.find(".product-list");
+            if (productList === undefined) {
+                failGet("failed to get product list");
+                return;
+            }
+            productList.each(function() {
+                console.log("product information");
+                var name = $(product).find('.product-name').get(0);
+                if (name === undefined) {
+                    failGet("failed to get product name");
+                    return false;
+                }
+                console.log("  product name:\t%s", a.text());
+                console.log("  link:\t%s", a.attr('href'));
 
+                var rate = $(this).find('.interest-rate .num-style').get(0);
+                if (rate === undefined) {
+                    failGet("failed to get product rate");
+                    return false;
+                }
+                console.log("  rate:\t%f%%", parseFloat(rate.text()));
+
+                var amount = $(this).find('.product-amount .num-style').get(0);
+                if (amount === undefined) {
+                    failGet("failed to get product amount");
+                    return false;
+                }
+                console.log("  amount:\t%f%%", parseFloat(amount.text().replace(',', '')));
+            });
+        },
+        error: function() {
+            failGet("failed to get list in onList");
+        }
+    });
+}
+
+function onMaxRate(availableMoney) {
+    var fundDetailLink = "https://list.lu.com/list/r030";
+    $.ajax({
+        url: fundDetailLink,
+        dataType: "html",
+        data: {
+            orderType: "R030_INVEST_RATE",
+            orderAsc: "true"
+        },
+        success: function(data) {
+            var doc = $(data);
+            var product = doc.find(".product-list").get(0);
+            if (product === undefined) {
+                failGet("failed to get product in getBaseRate");
+                return;
+            }
+            var rate = $(product).find('.interest-rate .num-style').get(0);
+            if (rate === undefined) {
+                failGet("failed to get rate in getBaseRate");
+                return;
+            }
+            var dRate = parseFloat($(rate).text());
+            console("max rate:\t%f", dRate);
+            onList(dRate, availableMoney - 1000, availableMoney);
+        },
+        error: function() {
+            failGet("failed to get list in getBaseRate");
+        }
+    });
 }
 
 function onFundDetail(data) {
-    //console.log(data);
     var doc = $(data);
     var amount = doc.find(".available-balance-wrap > .balance-amount").get(0);
-    if (amount == undefined) {
+    if (amount === undefined) {
         failGet("failed to get available amount");
         return;
     }
     var availableMoney = parseFloat($(amount).text().replace(',', ''));
     console.log("available money:\t%f", availableMoney);
 
-    onList(availableMoney - 1000, availableMoney);
+    onMaxRate(availableMoney);
 }
 
 function onUserInfo(data) {
-    if (data.userName == undefined) {
+    if (data.userName === undefined) {
         failGet("failed to get user information.");
         return;
     }
