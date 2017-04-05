@@ -4,14 +4,15 @@
     "version": "0.0.1", //插件使用的版本
     "description": "陆金所抢单助手", //插件的描述
     "permissions": [ //允许插件访问的url
-        "notifications", "tabs", "http://*/*", "https://*/*"
+        "storage", "tabs", "http://*/*", "https://*/*"
     ],
+    "options_page": "options.html",
     "background": { //background script即插件运行的环境
         "scripts": ["jquery-3.2.0.min.js", "background.js"]
     },
     "browser_action": { //插件加载后生成图标
         "default_icon": "lu.png", //图标的图片
-        //"default_popup": "popup.html", //单击图标执行的文件
+        "default_popup": "popup.html", //单击图标执行的文件
         "default_title": "陆金所抢单助手" //鼠标移到图标显示的文字
     }
     // "content_scripts": [{ //对页面内容进行操作的脚本
