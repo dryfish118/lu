@@ -1,3 +1,52 @@
+function onTrade(id) {
+    chrome.tabs.executeScript(id, { code: "$('.btns btn_xlarge investBtn sk-area-trigger').trigger()", runAt: "document_end" },
+        function(result) {
+            console.log("Succeed %s", result[0]);
+        });
+}
+
+function onBuyInNew(strUrl) {
+    console.log("open trade page in the new tab");
+    strUrl = "https://list.lu.com" + strUrl;
+    chrome.tabs.create({ url: strUrl, selected: true },
+        function(tab) {
+            console.log(tab.id);
+            onTrade(tab.id);
+        });
+}
+
+function onBuyInCurrent(id, strUrl) {
+    console.log("open trade page in the tab %d", id);
+    strUrl = "https://list.lu.com" + strUrl;
+    chrome.tabs.update({ openerTabId: id, url: strUrl },
+        function(tab) {
+            console.log(tab.id);
+            onTrade(tab.id);
+        });
+}
+
+function onBuy(strUrl) {
+    chrome.tabs.query({ active: true, currentWindow: true },
+        function(tabs) {
+            if (tabs === undefined) {
+                onBuyInNew(strUrl);
+            } else {
+                onBuyInCurrent(tabs[0].id, strUrl);
+            }
+        });
+}
+
+var LuProduct = {
+    createProduct: function() {
+        var product = {};
+        product.name = "";
+        product.url = "";
+        product.rate = 0;
+        product.amount = 0;
+        return product;
+    }
+};
+
 function onList(maxRate, minM, maxM) {
     if (maxM - minM > 5000 || minM < 5000) {
         console.log("poor man");
@@ -17,33 +66,33 @@ function onList(maxRate, minM, maxM) {
                 console.log("failed to get product list");
                 return;
             }
-            if (productList.length == 0) {
+            if (productList.length === 0) {
                 console.log("failed to get product list from %d to %d", minM, maxM);
                 setTimeout(_onList(maxRate, minM - 1000, maxM), 5 * 1000);
                 return;
             }
+            var products = new Array();
             productList.each(function() {
                 console.log("product information");
+
+                var product = LuProduct.createProduct();
                 var name = $(this).find(".product-name").get(0);
                 if (name === undefined) {
                     console.log("failed to get product name");
-                    return false;
+                    return true;
                 }
                 var a = $(name).find("a");
-                console.log("  product name:\t%s", $(a).text());
-                console.log("  link:\t%s", $(a).attr("href"));
+                product.name = $(a).text();
+                product.url = $(a).attr("href");
 
                 var rate = $(this).find(".interest-rate .num-style").get(0);
                 if (rate === undefined) {
                     console.log("failed to get product rate");
-                    return false;
+                    return true;
                 }
-                var dRate = parseFloat($(rate).text());
-                console.log("  rate:\t%f%%", dRate);
-                if (maxRate - dRate > 0.02) {
-                    console.log("low rate");
-                    setTimeout(_onList(maxRate, minM, maxM), 5 * 1000);
-                    return false;
+                product.rate = parseFloat($(rate).text());
+                if (maxRate - product.rate > 0.05) {
+                    return true;
                 }
 
                 var amount = $(this).find(".product-amount .num-style").get(0);
@@ -51,9 +100,38 @@ function onList(maxRate, minM, maxM) {
                     console.log("failed to get product amount");
                     return false;
                 }
-                var dAmount = parseFloat($(amount).text().replace(",", ""));
-                console.log("  amount:\t%f", dAmount);
+                product.amount = parseFloat($(amount).text().replace(",", ""));
+
+                if (maxRate - product.rate > 0.05) {
+                    return true;
+                }
+
+                console.log("  product name:\t%s", product.name);
+                console.log("  link:\t%s", product.url);
+                console.log("  rate:\t%f%%", product.rate);
+                console.log("  amount:\t%f", product.amount);
+
+                var i = 0;
+                for (; i < products.length; i++) {
+                    if (product.rate * product.amount > products[i].rate * products[i].amount) {
+                        products.splice(i, 0, product);
+                        break;
+                    }
+                }
+                if (i == products.length) {
+                    products.push(product);
+                }
+
+                return true;
             });
+
+            if (products.length === 0) {
+                console.log("low rate");
+                setTimeout(_onList(maxRate, minM, maxM), 5 * 1000);
+                return;
+            }
+
+            onBuy(products[0].url);
         },
         error: function() {
             console.log("failed to get list in onList");
