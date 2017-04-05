@@ -71,7 +71,7 @@ function onList(maxRate, minM, maxM) {
                 setTimeout(_onList(maxRate, minM - 1000, maxM), 5 * 1000);
                 return;
             }
-            var products = new Array();
+            var products = [];
             productList.each(function() {
                 console.log("product information");
 
