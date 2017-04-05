@@ -1,3 +1,33 @@
+function getMinMoney() {
+    var storage = chrome.storage.local;
+    storage.get("minmoney", function(items) {
+        if (items.minmoney) {
+            return items.minmoney;
+        }
+    });
+    return 5000;
+}
+
+function getStepMoney() {
+    var storage = chrome.storage.local;
+    storage.get("stepmoney", function(items) {
+        if (items.stepmoney) {
+            return items.stepmoney;
+        }
+    });
+    return 500;
+}
+
+function getMinRate() {
+    var storage = chrome.storage.local;
+    storage.get("minrate", function(items) {
+        if (items.minrate) {
+            return items.minrate;
+        }
+    });
+    return 0.02;
+}
+
 function onTrade(id) {
     chrome.tabs.executeScript(id, { code: "$('.btns btn_xlarge investBtn sk-area-trigger').trigger()", runAt: "document_end" },
         function(result) {
@@ -48,9 +78,13 @@ var LuProduct = {
 };
 
 function onList(maxRate, minM, maxM) {
-    if (maxM - minM > 5000 || minM < 5000) {
+    if (maxM < getMinMoney()) {
         console.log("poor man");
-        setTimeout(_onList(maxRate, maxM - 1000, maxM), 5 * 1000);
+        return;
+    }
+    if (maxM - minM > getMinMoney() || minM < getMinMoney()) {
+        console.log("poor man, refresh & restart");
+        setTimeout(_onList(maxRate, maxM - getStepMoney(), maxM), 5 * 1000);
         return;
     }
     var fundDetailLink = "https://list.lu.com/list/r030";
@@ -68,7 +102,7 @@ function onList(maxRate, minM, maxM) {
             }
             if (productList.length === 0) {
                 console.log("failed to get product list from %d to %d", minM, maxM);
-                setTimeout(_onList(maxRate, minM - 1000, maxM), 5 * 1000);
+                setTimeout(_onList(maxRate, minM - getStepMoney(), maxM), 5 * 1000);
                 return;
             }
             var products = [];
@@ -91,7 +125,7 @@ function onList(maxRate, minM, maxM) {
                     return true;
                 }
                 product.rate = parseFloat($(rate).text());
-                if (maxRate - product.rate > 0.05) {
+                if (maxRate - product.rate > getMinRate()) {
                     return true;
                 }
 
@@ -101,10 +135,6 @@ function onList(maxRate, minM, maxM) {
                     return false;
                 }
                 product.amount = parseFloat($(amount).text().replace(",", ""));
-
-                if (maxRate - product.rate > 0.05) {
-                    return true;
-                }
 
                 console.log("  product name:\t%s", product.name);
                 console.log("  link:\t%s", product.url);
@@ -166,7 +196,7 @@ function onMaxRate(availableMoney) {
             }
             var dRate = parseFloat($(rate).text());
             console.log("max rate:\t%f", dRate);
-            onList(dRate, availableMoney - 1000, availableMoney);
+            onList(dRate, availableMoney - getStepMoney(), availableMoney);
         },
         error: function() {
             console.log("failed to get list in onMaxRate");

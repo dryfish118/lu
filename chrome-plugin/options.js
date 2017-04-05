@@ -1,31 +1,53 @@
-var submitButton = document.querySelector('button.submit');
-var resetButton = document.querySelector('button.reset');
-
 loadConfig();
 
-submitButton.addEventListener('click', saveConfig);
-resetButton.addEventListener('click', loadConfig);
-
 function loadConfig() {
+    console.log("load config");
     var storage = chrome.storage.local;
-    storage.get("userName", function(items) {
-        if (items.userName) {
-            $("#user-name").value = items.userName;
+    storage.get("username", function(items) {
+        if (items.username) {
+            $("#username").val(items.username);
         } else {
-            $("#user-name").value = "";
+            $("#username").val("");
         }
     });
-    storage.get("userPass", function(items) {
-        if (items.userPass) {
-            $("#user-pass").value = items.userPass;
+    storage.get("userpass", function(items) {
+        if (items.userpass) {
+            $("#userpass").val(items.userpass);
         } else {
-            $("#user-pass").value = "";
+            $("#userpass").val("");
+        }
+    });
+    storage.get("minmoney", function(items) {
+        if (items.minmoney) {
+            $("#minmoney").val(items.minmoney);
+        } else {
+            $("#minmoney").val("5000");
+        }
+    });
+    storage.get("stepmoney", function(items) {
+        if (items.stepmoney) {
+            $("#stepmoney").val(items.stepmoney);
+        } else {
+            $("#stepmoney").val("500");
+        }
+    });
+    storage.get("minrate", function(items) {
+        if (items.minrate) {
+            $("#minrate").val(items.minrate);
+        } else {
+            $("#minrate").val("0.02");
         }
     });
 }
 
-function saveConfig() {
+$("#submit").click(function() {
+    console.log("save config");
     var storage = chrome.storage.local;
-    storage.set({ "userName": $("#user-name").value });
-    storage.set({ "userPass": $("#user-pass").value });
-}
+    storage.set({ "username": $("#username").val() });
+    storage.set({ "userpass": $("#userpass").val() });
+    storage.set({ "minmoney": $("#minmoney").val() });
+    storage.set({ "stepmoney": $("#stepmoney").val() });
+    storage.set({ "minrate": $("#minrate").val() });
+});
+
+$("#reset").click(loadConfig);
