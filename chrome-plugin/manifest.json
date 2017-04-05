@@ -21,10 +21,7 @@
     //         //"run_at": "document_end" //在document加载时执行该脚本
     // }]
     // "content_scripts": [{
-    //     //"matches": ["https://*.lu.com/*"],
-    //     //"matches": ["https://*/r030*"],
     //     "matches": ["https://*/*"],
-    //     //"js": ["jquery.js", "js.js"],
     //     "js": ["jquery-3.2.0.min.js", "js.js"]
     // }]
 }
