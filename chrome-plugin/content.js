@@ -8,5 +8,9 @@ chrome.runtime.onMessage.addListener(
             $("#loginFlagnew").trigger("click");
 
             sendResponse({ result: "Ok" });
+        } else if (request.message == "begin trading") {
+            $("a[data-sk=lijitouzi]").trigger("click");
+
+            sendResponse({ result: "Ok" });
         }
     });

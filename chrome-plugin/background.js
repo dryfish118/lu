@@ -1,6 +1,18 @@
 chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
     if (request.message === "get") {
-        sendResponse(localStorage[request.object]);
+        if (request.object == "username") {
+            sendResponse(getUserName());
+        } else if (request.object == "userpass") {
+            sendResponse(getUserPass());
+        } else if (request.object == "tradepass") {
+            sendResponse(getTradePass());
+        } else if (request.object == "minmoney") {
+            sendResponse(getMinMoney());
+        } else if (request.object == "stepmoney") {
+            sendResponse(getStepMoney());
+        } else if (request.object == "minrate") {
+            sendResponse(getMinRate());
+        }
     } else if (request.message === "set") {
         localStorage[request.object] = request.value;
     }
@@ -43,9 +55,17 @@ function getMinRate() {
 }
 
 function onTrade(id) {
-    chrome.tabs.executeScript(id, { code: "$('.btns btn_xlarge investBtn sk-area-trigger').trigger()", runAt: "document_end" },
-        function(result) {
-            console.log("Succeed %s", result[0]);
+    console.log("begin trading");
+    chrome.tabs.sendMessage(tab.id, {
+            message: "begin trading",
+            tradepass: getTradePass()
+        }, null,
+        function(response) {
+            if (response !== undefined && response.result == "Ok") {
+                console.log("Succeeded to trade");
+            } else {
+                console.log("failed to trade");
+            }
         });
 }
 
@@ -54,7 +74,6 @@ function onBuyInNew(strUrl) {
     strUrl = "https://list.lu.com" + strUrl;
     chrome.tabs.create({ url: strUrl, selected: true },
         function(tab) {
-            console.log(tab.id);
             onTrade(tab.id);
         });
 }
@@ -64,7 +83,6 @@ function onBuyInCurrent(id, strUrl) {
     strUrl = "https://list.lu.com" + strUrl;
     chrome.tabs.update({ openerTabId: id, url: strUrl },
         function(tab) {
-            console.log(tab.id);
             onTrade(tab.id);
         });
 }
@@ -78,6 +96,12 @@ function onBuy(strUrl) {
                 onBuyInCurrent(tabs[0].id, strUrl);
             }
         });
+}
+
+function _onBuy(strUrl) {
+    return function() {
+        onBuy(strUrl);
+    };
 }
 
 var LuProduct = {
@@ -101,10 +125,10 @@ function onList(maxRate, minM, maxM) {
         setTimeout(_onList(maxRate, maxM - getStepMoney(), maxM), 5 * 1000);
         return;
     }
-    var fundDetailLink = "https://list.lu.com/list/r030";
+    var strUrl = "https://list.lu.com/list/r030";
     var strData = "currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false&minMoney=" + minM + "&maxMoney=" + maxM;
     $.ajax({
-        url: fundDetailLink,
+        url: strUrl,
         dataType: "html",
         data: strData,
         success: function(data) {
@@ -175,7 +199,7 @@ function onList(maxRate, minM, maxM) {
                 return;
             }
 
-            onBuy(products[0].url);
+            setTimeout(_onBuy(products[0].url));
         },
         error: function() {
             console.log("failed to get list in onList");
@@ -190,15 +214,14 @@ function _onList(maxRate, minM, maxM) {
 }
 
 function onMaxRate(availableMoney) {
-    var fundDetailLink = "https://list.lu.com/list/r030";
+    var strUrl = "https://list.lu.com/list/r030";
     var strData = "currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false";
     $.ajax({
-        url: fundDetailLink,
+        url: strUrl,
         dataType: "html",
         data: strData,
-        success: function(data) {
-            var doc = $(data);
-            var product = doc.find(".product-list").get(0);
+        success: function(doc) {
+            var product = $(doc).find(".product-list").get(0);
             if (product === undefined) {
                 console.log("failed to get product in onMaxRate");
                 return;
@@ -210,12 +233,18 @@ function onMaxRate(availableMoney) {
             }
             var dRate = parseFloat($(rate).text());
             console.log("max rate:\t%f", dRate);
-            onList(dRate, availableMoney - getStepMoney(), availableMoney);
+            setTimeout(_onList(dRate, availableMoney - getStepMoney(), availableMoney), 5 * 1000);
         },
         error: function() {
             console.log("failed to get list in onMaxRate");
         }
     });
+}
+
+function _onMaxRate(availableMoney) {
+    return function() {
+        onMaxRate(availableMoney);
+    };
 }
 
 function onFundDetail(data) {
@@ -228,20 +257,20 @@ function onFundDetail(data) {
     var availableMoney = parseFloat($(amount).text().replace(",", ""));
     console.log("available money:\t%f", availableMoney);
 
-    onMaxRate(parseInt(availableMoney));
+    setTimeout(_onMaxRate(parseInt(availableMoney)));
 }
 
 function onUserInfo(data) {
-    if (data.userName === undefined) {
+    if (data.uid === undefined) {
         console.log("failed to get user information.");
         return;
     }
     console.log("user id:\t%d", data.uid);
     console.log("user name:\t%s", data.userName);
 
-    var fundDetailLink = "https://my.lu.com/my/yeb/fund-detail";
+    var strUrl = "https://my.lu.com/my/yeb/fund-detail";
     $.ajax({
-        url: fundDetailLink,
+        url: strUrl,
         dataType: "html",
         success: function(data) {
             onFundDetail(data);
@@ -268,7 +297,6 @@ function onLoginInCurrentTab(tab) {
     var strUrl = "https://user.lu.com/user/login";
     chrome.tabs.update({ openerTabId: tab.id, url: strUrl },
         function(tab) {
-            //等待登录页面加载完成
             setTimeout(_onLogin(tab), 5 * 1000);
         });
 }
@@ -306,7 +334,6 @@ function onLogin(tab) {
             function(response) {
                 if (response !== undefined && response.result == "Ok") {
                     console.log("Succeeded to login");
-                    //等待登录完成
                     setTimeout(_onStart(), 5 * 1000);
                 } else {
                     console.log("failed to login");
