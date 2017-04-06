@@ -1,57 +1,45 @@
-var storage = chrome.storage.local;
+chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
+    if (request.message === "get") {
+        sendResponse(localStorage[request.object]);
+    } else if (request.message === "set") {
+        localStorage[request.object] = request.value;
+    }
+});
 
 function getUserName() {
-    storage.get("username", function(items) {
-        if (items !== undefined && items.username !== undefined) {
-            return items.username;
-        }
-    });
-    return "";
+    return localStorage.username;
 }
 
 function getUserPass() {
-    storage.get("userpass", function(items) {
-        if (items !== undefined && items.userpass !== undefined) {
-            return items.userpass;
-        }
-    });
-    return "";
+    return localStorage.userpass;
 }
 
 function getTradePass() {
-    storage.get("tradepass", function(items) {
-        if (items !== undefined && items.tradepass !== undefined) {
-            return items.tradepass;
-        }
-    });
-    return "";
+    return localStorage.tradepass;
 }
 
 function getMinMoney() {
-    storage.get("minmoney", function(items) {
-        if (items !== undefined && items.minmoney !== undefined) {
-            return items.minmoney;
-        }
-    });
-    return 5000;
+    if (localStorage.minmoney === undefined) {
+        return 5000;
+    } else {
+        return localStorage.minmoney;
+    }
 }
 
 function getStepMoney() {
-    storage.get("stepmoney", function(items) {
-        if (items !== undefined && items.stepmoney !== undefined) {
-            return items.stepmoney;
-        }
-    });
-    return 500;
+    if (localStorage.stepmoney === undefined) {
+        return 500;
+    } else {
+        return localStorage.stepmoney;
+    }
 }
 
 function getMinRate() {
-    storage.get("minrate", function(items) {
-        if (items !== undefined && items.minrate !== undefined) {
-            return items.minrate;
-        }
-    });
-    return 0.02;
+    if (localStorage.minrate === undefined) {
+        return 0.02;
+    } else {
+        return localStorage.minrate;
+    }
 }
 
 function onTrade(id) {
@@ -266,50 +254,71 @@ function onUserInfo(data) {
 
 function onLoginInNewTab() {
     console.log("open 'user.lu.com' in the new tab");
-    strUrl = "https://user.lu.com/user/login";
+
+    var strUrl = "https://user.lu.com/user/login";
     chrome.tabs.create({ url: strUrl, selected: true },
         function(tab) {
-            setTimeout(_onLogin, 5 * 1000);
+            setTimeout(_onLogin(tab), 5 * 1000);
         });
 }
 
-function onLoginInCurrentTab(id) {
-    console.log("open 'user.lu.com' in the current tab %d", id);
+function onLoginInCurrentTab(tab) {
+    console.log("open 'user.lu.com' in the current tab %d", tab.id);
+
     var strUrl = "https://user.lu.com/user/login";
-    chrome.tabs.update({ openerTabId: id, url: strUrl },
+    chrome.tabs.update({ openerTabId: tab.id, url: strUrl },
         function(tab) {
-            setTimeout(_onLogin, 5 * 1000);
+            //等待登录页面加载完成
+            setTimeout(_onLogin(tab), 5 * 1000);
         });
 }
 
-function _onLogin() {
-    onLogin();
+function _onLogin(tab) {
+    return function() {
+        onLogin(tab);
+    };
 }
 
-function onLogin() {
-    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-        if (tabs === undefined) {
-            onLoginInNewTab();
-        } else {
-            var tab = tabs[0];
-            console.log("current url is '%s'", tab.url);
-            var strUrl = "https://user.lu.com/user/login";
-            if (strUrl !== tab.url.substr(0, strUrl.length).toLocaleLowerCase()) {
-                onLoginInCurrentTab(tab.id);
-                return;
+function onLogin(tab) {
+    if (tab === undefined) {
+        chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+            if (tabs === undefined) {
+                onLoginInNewTab();
+            } else {
+                onLogin(tabs[0]);
             }
+        });
+    } else {
+        console.log("current url is '%s'", tab.url);
+        var strUrl = "https://user.lu.com/user/login";
+        var newUrl = tab.url.substr(0, strUrl.length).toLocaleLowerCase();
+        if (strUrl !== newUrl) {
+            onLoginInCurrentTab(tab);
+            return;
+        }
 
-            console.log("sendMessage (login lu) to %d", tab.id);
-            chrome.tabs.sendMessage(tab.id, { message: "login lu" }, function(response) {
+        console.log("sendMessage (login lu) to %d", tab.id);
+        chrome.tabs.sendMessage(tab.id, {
+                message: "login lu",
+                username: getUserName(),
+                userpass: getUserPass()
+            }, null,
+            function(response) {
                 if (response !== undefined && response.result == "Ok") {
                     console.log("Succeeded to login");
-                    onStart();
+                    //等待登录完成
+                    setTimeout(_onStart(), 5 * 1000);
                 } else {
                     console.log("failed to login");
                 }
             });
-        }
-    });
+    }
+}
+
+function _onStart() {
+    return function() {
+        onStart();
+    };
 }
 
 function onStart() {

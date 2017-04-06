@@ -4,59 +4,35 @@ loadConfig();
 function loadConfig() {
     console.log("load config");
 
-    storage.get("username", function(items) {
-        if (items.username === undefined) {
-            $("#username").val("");
-        } else {
-            $("#username").val(items.username);
-        }
+    chrome.runtime.sendMessage({ message: "get", object: "username" }, function(response) {
+        $("#username").val(response);
     });
-    storage.get("userpass", function(items) {
-        if (items.userpass === undefined) {
-            $("#userpass").val("");
-        } else {
-            $("#userpass").val(items.userpass);
-        }
+    chrome.runtime.sendMessage({ message: "get", object: "userpass" }, function(response) {
+        $("#userpass").val(response);
     });
-    storage.get("tradepass", function(items) {
-        if (items.tradepass === undefined) {
-            $("#tradepass").val("");
-        } else {
-            $("#tradepass").val(items.tradepass);
-        }
+    chrome.runtime.sendMessage({ message: "get", object: "tradepass" }, function(response) {
+        $("#tradepass").val(response);
     });
-    storage.get("minmoney", function(items) {
-        if (items.minmoney === undefined) {
-            $("#minmoney").val("5000");
-        } else {
-            $("#minmoney").val(items.minmoney);
-        }
+    chrome.runtime.sendMessage({ message: "get", object: "minmoney" }, function(response) {
+        $("#minmoney").val(response);
     });
-    storage.get("stepmoney", function(items) {
-        if (items.stepmoney === undefined) {
-            $("#stepmoney").val("500");
-        } else {
-            $("#stepmoney").val(items.stepmoney);
-        }
+    chrome.runtime.sendMessage({ message: "get", object: "stepmoney" }, function(response) {
+        $("#stepmoney").val(response);
     });
-    storage.get("minrate", function(items) {
-        if (items.minrate === undefined) {
-            $("#minrate").val("0.02");
-        } else {
-            $("#minrate").val(items.minrate);
-        }
+    chrome.runtime.sendMessage({ message: "get", object: "minrate" }, function(response) {
+        $("#minrate").val(response);
     });
 }
 
 $("#submit").click(function() {
     console.log("save config");
 
-    storage.set({ "username": $("#username").val() });
-    storage.set({ "userpass": $("#userpass").val() });
-    storage.set({ "tradepass": $("#tradepass").val() });
-    storage.set({ "minmoney": $("#minmoney").val() });
-    storage.set({ "stepmoney": $("#stepmoney").val() });
-    storage.set({ "minrate": $("#minrate").val() });
+    chrome.runtime.sendMessage({ message: "set", object: "username", value: $("#username").val() });
+    chrome.runtime.sendMessage({ message: "set", object: "userpass", value: $("#userpass").val() });
+    chrome.runtime.sendMessage({ message: "set", object: "tradepass", value: $("#tradepass").val() });
+    chrome.runtime.sendMessage({ message: "set", object: "minmoney", value: $("#minmoney").val() });
+    chrome.runtime.sendMessage({ message: "set", object: "stepmoney", value: $("#stepmoney").val() });
+    chrome.runtime.sendMessage({ message: "set", object: "minrate", value: $("#minrate").val() });
 });
 
 $("#reset").click(loadConfig);

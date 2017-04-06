@@ -4,11 +4,12 @@
     "version": "0.0.1",
     "description": "陆金所抢单助手",
     "permissions": [
-        "storage", "tabs", "http://*/*", "https://*/*"
+        "alarms", "storage", "tabs", "http://*/*", "https://*/*"
     ],
     "options_page": "options.html",
     "background": {
-        "scripts": ["jquery-3.2.0.min.js", "background.js"]
+        "scripts": ["jquery-3.2.0.min.js", "background.js"],
+        "persistent": false
     },
     "browser_action": {
         "default_icon": "lu.png",
@@ -17,6 +18,6 @@
     "content_scripts": [{
         "matches": ["https://*/*"],
         "js": ["jquery-3.2.0.min.js", "content.js"],
-        "run_at": "document_start"
+        "run_at": "document_end"
     }]
 }
