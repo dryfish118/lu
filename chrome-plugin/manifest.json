@@ -1,27 +1,22 @@
 {
-    "manifest_version": 2, //固定的
-    "name": "抢单助手", //插件名称
-    "version": "0.0.1", //插件使用的版本
-    "description": "陆金所抢单助手", //插件的描述
-    "permissions": [ //允许插件访问的url
+    "manifest_version": 2,
+    "name": "抢单助手",
+    "version": "0.0.1",
+    "description": "陆金所抢单助手",
+    "permissions": [
         "storage", "tabs", "http://*/*", "https://*/*"
     ],
     "options_page": "options.html",
-    "background": { //background script即插件运行的环境
+    "background": {
         "scripts": ["jquery-3.2.0.min.js", "background.js"]
     },
-    "browser_action": { //插件加载后生成图标
-        "default_icon": "lu.png", //图标的图片
-        "default_popup": "popup.html", //单击图标执行的文件
-        "default_title": "陆金所抢单助手" //鼠标移到图标显示的文字
-    }
-    // "content_scripts": [{ //对页面内容进行操作的脚本
-    //     "matches": ["http://*/*", "https://*/*"], //满足什么条件执行该插件 
-    //     "js": ["jquery-3.2.0.min.js", "js.js"]
-    //         //"run_at": "document_end" //在document加载时执行该脚本
-    // }]
-    // "content_scripts": [{
-    //     "matches": ["https://*/*"],
-    //     "js": ["jquery-3.2.0.min.js", "js.js"]
-    // }]
+    "browser_action": {
+        "default_icon": "lu.png",
+        "default_title": "陆金所抢单助手"
+    },
+    "content_scripts": [{
+        "matches": ["https://*/*"],
+        "js": ["jquery-3.2.0.min.js", "content.js"],
+        "run_at": "document_start"
+    }]
 }

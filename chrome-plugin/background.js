@@ -1,7 +1,35 @@
+var storage = chrome.storage.local;
+
+function getUserName() {
+    storage.get("username", function(items) {
+        if (items !== undefined && items.username !== undefined) {
+            return items.username;
+        }
+    });
+    return "";
+}
+
+function getUserPass() {
+    storage.get("userpass", function(items) {
+        if (items !== undefined && items.userpass !== undefined) {
+            return items.userpass;
+        }
+    });
+    return "";
+}
+
+function getTradePass() {
+    storage.get("tradepass", function(items) {
+        if (items !== undefined && items.tradepass !== undefined) {
+            return items.tradepass;
+        }
+    });
+    return "";
+}
+
 function getMinMoney() {
-    var storage = chrome.storage.local;
     storage.get("minmoney", function(items) {
-        if (items.minmoney) {
+        if (items !== undefined && items.minmoney !== undefined) {
             return items.minmoney;
         }
     });
@@ -9,9 +37,8 @@ function getMinMoney() {
 }
 
 function getStepMoney() {
-    var storage = chrome.storage.local;
     storage.get("stepmoney", function(items) {
-        if (items.stepmoney) {
+        if (items !== undefined && items.stepmoney !== undefined) {
             return items.stepmoney;
         }
     });
@@ -19,9 +46,8 @@ function getStepMoney() {
 }
 
 function getMinRate() {
-    var storage = chrome.storage.local;
     storage.get("minrate", function(items) {
-        if (items.minrate) {
+        if (items !== undefined && items.minrate !== undefined) {
             return items.minrate;
         }
     });
@@ -238,17 +264,73 @@ function onUserInfo(data) {
     });
 }
 
-chrome.browserAction.onClicked.addListener(function() {
+function onLoginInNewTab() {
+    console.log("open 'user.lu.com' in the new tab");
+    strUrl = "https://user.lu.com/user/login";
+    chrome.tabs.create({ url: strUrl, selected: true },
+        function(tab) {
+            setTimeout(_onLogin, 5 * 1000);
+        });
+}
+
+function onLoginInCurrentTab(id) {
+    console.log("open 'user.lu.com' in the current tab %d", id);
+    var strUrl = "https://user.lu.com/user/login";
+    chrome.tabs.update({ openerTabId: id, url: strUrl },
+        function(tab) {
+            setTimeout(_onLogin, 5 * 1000);
+        });
+}
+
+function _onLogin() {
+    onLogin();
+}
+
+function onLogin() {
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+        if (tabs === undefined) {
+            onLoginInNewTab();
+        } else {
+            var tab = tabs[0];
+            console.log("current url is '%s'", tab.url);
+            var strUrl = "https://user.lu.com/user/login";
+            if (strUrl !== tab.url.substr(0, strUrl.length).toLocaleLowerCase()) {
+                onLoginInCurrentTab(tab.id);
+                return;
+            }
+
+            console.log("sendMessage (login lu) to %d", tab.id);
+            chrome.tabs.sendMessage(tab.id, { message: "login lu" }, function(response) {
+                if (response !== undefined && response.result == "Ok") {
+                    console.log("Succeeded to login");
+                    onStart();
+                } else {
+                    console.log("failed to login");
+                }
+            });
+        }
+    });
+}
+
+function onStart() {
     //{"unreadMsgCount":0,"cardBindStatus":"1","uid":28160626,"nameAuthentication":"1","sex":"M","name":"邓涛","mobileNo":"18511478118","userName":"dengtao118","isNewUser":false,"isInvestPrepared":true}
-    var userInfoLink = "https://user.lu.com/user/service/user/current-user-info-for-homepage";
+    var strUrl = "https://user.lu.com/user/service/user/current-user-info-for-homepage";
     $.ajax({
-        url: userInfoLink,
+        url: strUrl,
         dataType: "json",
         success: function(data) {
-            onUserInfo(data);
+            if (data.uid === undefined) {
+                onLogin();
+            } else {
+                onUserInfo(data);
+            }
         },
         error: function() {
             console.log("failed to get user information.");
         }
     });
+}
+
+chrome.browserAction.onClicked.addListener(function() {
+    onStart();
 });

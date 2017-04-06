@@ -1,8 +1,9 @@
+var storage = chrome.storage.local;
 loadConfig();
 
 function loadConfig() {
     console.log("load config");
-    var storage = chrome.storage.local;
+
     storage.get("username", function(items) {
         if (items.username === undefined) {
             $("#username").val("");
@@ -15,6 +16,13 @@ function loadConfig() {
             $("#userpass").val("");
         } else {
             $("#userpass").val(items.userpass);
+        }
+    });
+    storage.get("tradepass", function(items) {
+        if (items.tradepass === undefined) {
+            $("#tradepass").val("");
+        } else {
+            $("#tradepass").val(items.tradepass);
         }
     });
     storage.get("minmoney", function(items) {
@@ -42,9 +50,10 @@ function loadConfig() {
 
 $("#submit").click(function() {
     console.log("save config");
-    var storage = chrome.storage.local;
+
     storage.set({ "username": $("#username").val() });
     storage.set({ "userpass": $("#userpass").val() });
+    storage.set({ "tradepass": $("#tradepass").val() });
     storage.set({ "minmoney": $("#minmoney").val() });
     storage.set({ "stepmoney": $("#stepmoney").val() });
     storage.set({ "minrate": $("#minrate").val() });
