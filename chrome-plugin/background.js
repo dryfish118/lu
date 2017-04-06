@@ -322,7 +322,6 @@ function _onStart() {
 }
 
 function onStart() {
-    //{"unreadMsgCount":0,"cardBindStatus":"1","uid":28160626,"nameAuthentication":"1","sex":"M","name":"邓涛","mobileNo":"18511478118","userName":"dengtao118","isNewUser":false,"isInvestPrepared":true}
     var strUrl = "https://user.lu.com/user/service/user/current-user-info-for-homepage";
     $.ajax({
         url: strUrl,
