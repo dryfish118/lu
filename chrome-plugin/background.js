@@ -41,85 +41,6 @@ function isUrlMatch(url1, url2) {
     return (url1 === url2);
 }
 
-chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
-    if (request.message === "get") {
-        if (request.object === "username") {
-            sendResponse(getUserName());
-        } else if (request.object === "userpass") {
-            sendResponse(getUserPass());
-        } else if (request.object === "tradepass") {
-            sendResponse(getTradePass());
-        } else if (request.object === "maxmoney") {
-            sendResponse(getMaxMoney());
-        } else if (request.object === "minmoney") {
-            sendResponse(getMinMoney());
-        } else if (request.object === "stepmoney") {
-            sendResponse(getStepMoney());
-        } else if (request.object === "minrate") {
-            sendResponse(getMinRate());
-        } else if (request.object === "steprate") {
-            sendResponse(getStepRate());
-        }
-    } else if (request.message === "set") {
-        localStorage[request.object] = request.value;
-    } else if (request.message === "jump") {
-        if (request.object === "login") {
-            workFlow = WorkFlow.WorkFlow_LoginPageJumped;
-            console.log("WorkFlow_LoginPageJumped");
-        } else if (request.object === "investment") {
-            if (request.result === "Ok") {
-                workFlow = WorkFlow.WorkFlow_ProductPageJumped;
-                console.log("WorkFlow_ProductPageJumped");
-            } else {
-                console.log("product is sold, refresh & restart after 5s.");
-                setTimeout(_aquireProductList(g_money - parseInt(getStepMoney())), 5 * 1000);
-            }
-        }
-    }
-});
-
-chrome.webNavigation.onCompleted.addListener(function(details) {
-    switch (workFlow) {
-        case WorkFlow.WorkFlow_OpenLoginPage:
-            {
-                if (isUrlMatch(url_login, details.url)) {
-                    console.log("onCompleted %s", details.url);
-                    doLogin();
-                }
-                break;
-            }
-        case WorkFlow.WorkFlow_LoginPageOpened:
-        case WorkFlow.WorkFlow_LoginPageJumped:
-            {
-                if (isUrlMatch(url_account, details.url)) {
-                    console.log("onCompleted %s", details.url);
-                    startWork();
-                } else if (isUrlMatch(url_login, details.url)) {
-                    console.log("onCompleted %s", details.url);
-                    console.log("failed to login, relogin");
-                    doLogin();
-                }
-                break;
-            }
-        case WorkFlow.WorkFlow_OpenProductPage:
-            {
-                if (isUrlMatch(url_monitor, details.url)) {
-                    console.log("onCompleted %s", details.url);
-                    doInvestment();
-                }
-                break;
-            }
-        case WorkFlow.WorkFlow_Investment:
-        case WorkFlow.WorkFlow_ProductPageJumped:
-            {
-                if (isUrlMatch(url_monitor, details.url)) {
-                    console.log("onCompleted %s", details.url);
-                }
-                break;
-            }
-    }
-});
-
 function getUserName() {
     if (localStorage.username === undefined) {
         return "";
@@ -184,16 +105,102 @@ function getStepRate() {
     }
 }
 
+chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
+    if (request.message === "get") {
+        if (request.object === "username") {
+            sendResponse(getUserName());
+        } else if (request.object === "userpass") {
+            sendResponse(getUserPass());
+        } else if (request.object === "tradepass") {
+            sendResponse(getTradePass());
+        } else if (request.object === "maxmoney") {
+            sendResponse(getMaxMoney());
+        } else if (request.object === "minmoney") {
+            sendResponse(getMinMoney());
+        } else if (request.object === "stepmoney") {
+            sendResponse(getStepMoney());
+        } else if (request.object === "minrate") {
+            sendResponse(getMinRate());
+        } else if (request.object === "steprate") {
+            sendResponse(getStepRate());
+        }
+    } else if (request.message === "set") {
+        localStorage[request.object] = request.value;
+    } else if (request.message === "jump") {
+        if (request.object === "login") {
+            workFlow = WorkFlow.WorkFlow_LoginPageJumped;
+            console.log("WorkFlow_LoginPageJumped");
+        } else if (request.object === "investment") {
+            if (request.result === "Ok") {
+                workFlow = WorkFlow.WorkFlow_ProductPageJumped;
+                console.log("WorkFlow_ProductPageJumped");
+            } else {
+                console.log("the product is sold, refresh & restart after 5s.");
+                setTimeout(_aquireProductList(g_money - parseInt(getStepMoney())), 5 * 1000);
+            }
+        }
+    }
+});
+
+chrome.webNavigation.onCompleted.addListener(function(details) {
+    switch (workFlow) {
+        case WorkFlow.WorkFlow_OpenLoginPage:
+            {
+                if (isUrlMatch(url_login, details.url)) {
+                    console.log("onCompleted %s", details.url);
+                    doLogin();
+                }
+                break;
+            }
+        case WorkFlow.WorkFlow_LoginPageOpened:
+        case WorkFlow.WorkFlow_LoginPageJumped:
+            {
+                if (isUrlMatch(url_account, details.url)) {
+                    console.log("onCompleted %s", details.url);
+                    startWork();
+                } else if (isUrlMatch(url_login, details.url)) {
+                    console.log("onCompleted %s", details.url);
+                    console.log("failed to login, relogin");
+                    doLogin();
+                }
+                break;
+            }
+        case WorkFlow.WorkFlow_OpenProductPage:
+            {
+                if (isUrlMatch(url_monitor, details.url)) {
+                    console.log("onCompleted %s", details.url);
+                    doInvestment();
+                }
+                break;
+            }
+        case WorkFlow.WorkFlow_Investment:
+        case WorkFlow.WorkFlow_ProductPageJumped:
+            {
+                if (isUrlMatch(url_monitor, details.url)) {
+                    console.log("onCompleted %s", details.url);
+                }
+                break;
+            }
+    }
+});
+
 function doInvestment() {
     workFlow = WorkFlow.WorkFlow_Investment;
     console.log("WorkFlow_Investment");
 
-    url_monitor = "https://trading.lu.com/trading/trade-info";
-    chrome.tabs.executeScript(tab.id, { file: "jquery.min.js" }, function() {
-        chrome.tabs.executeScript(tab.id, { file: "investment.js" }, function() {
-            console.log("investment.js injected.");
-            chrome.tabs.sendMessage(tab.id, { message: "investment" });
-        });
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+        if (tabs === undefined) {
+            console.log("the product page is not open.");
+            openProductPage();
+        } else {
+            url_monitor = "https://trading.lu.com/trading/trade-info";
+            chrome.tabs.executeScript(tabs[0].id, { file: "jquery.min.js" }, function() {
+                chrome.tabs.executeScript(tabs[0].id, { file: "investment.js" }, function() {
+                    console.log("investment.js injected.");
+                    chrome.tabs.sendMessage(tabs[0].id, { message: "investment" });
+                });
+            });
+        }
     });
 }
 
@@ -206,9 +213,8 @@ function openProductPage() {
             console.log("open the product page in the new tab");
             chrome.tabs.create({ url: url_monitor, selected: true });
         } else {
-            var tab = tabs[0];
-            console.log("open the product page in the current tab %d", tab.id);
-            chrome.tabs.update({ openerTabId: tab.id, url: url_monitor });
+            console.log("open the product page in the current tab %d", tabs[0].id);
+            chrome.tabs.update({ openerTabId: tabs[0].id, url: url_monitor });
         }
     });
 }
@@ -264,13 +270,24 @@ function aquireProductList(minMoney) {
 
                 var product = LuProduct.createProduct();
 
+                var status = $(this).find(".product-status").get(0);
+                if (status === undefined) {
+                    console.log("failed to aquire the product status.");
+                    return true;
+                }
+                var a = $(status).find("a");
+                if ($(a).attr("data-sk") !== "invest_list") {
+                    console.log("the product is sold.");
+                    return true;
+                }
+
                 var rate = $(this).find(".interest-rate .num-style").get(0);
                 if (rate === undefined) {
                     console.log("failed to aquire the product rate.");
                     return true;
                 }
                 product.rate = parseFloat($(rate).text());
-                if (g_rate - product.rate < parseFloat(getStepRate())) {
+                if (g_rate - product.rate > parseFloat(getStepRate())) {
                     console.log("the product rate %f is lower than the min rate.", product.rate);
                     return false;
                 }
@@ -280,7 +297,7 @@ function aquireProductList(minMoney) {
                     console.log("failed to aquire the product name.");
                     return true;
                 }
-                var a = $(name).find("a");
+                a = $(name).find("a");
                 product.name = $(a).text();
                 product.url = $(a).attr("href");
                 if (product.url === undefined || product.url.length === 0) {
@@ -360,7 +377,7 @@ function aquireMaxRate() {
 
             var minRate = parseFloat(getMinRate());
             if (minRate !== 0 && g_rate < minRate + parseFloat(getStepRate())) {
-                console.log("current max rate is lower than min rate %f", minRate);
+                console.log("current max rate is lower than the min rate %f", minRate);
                 workFlow = WorkFlow.WorkFlow_Idle;
                 console.log("WorkFlow_Idle");
                 return;
@@ -445,11 +462,11 @@ function doLogin() {
                 console.log("WorkFlow_OpenLoginPage");
             });
         } else {
-            var tab = tabs[0];
-            console.log("current url is '%s'", tab.url);
-            if (!isUrlMatch(url_login, tab.url)) {
-                console.log("open the login page in the current tab %d", tab.id);
-                chrome.tabs.update({ openerTabId: tab.id, url: url_login }, function() {
+            var strUrl = tabs[0].url;
+            console.log("current url is '%s'", strUrl);
+            if (!isUrlMatch(url_login, strUrl)) {
+                console.log("open the login page in the current tab %d", tabs[0].id);
+                chrome.tabs.update({ openerTabId: tabs[0].id, url: url_login }, function() {
                     workFlow = WorkFlow.WorkFlow_OpenLoginPage;
                     console.log("WorkFlow_OpenLoginPage");
                 });
@@ -458,10 +475,10 @@ function doLogin() {
 
             workFlow = WorkFlow.WorkFlow_LoginPageOpened;
             console.log("WorkFlow_LoginPageOpened");
-            chrome.tabs.executeScript(tab.id, { file: "jquery.min.js" }, function() {
-                chrome.tabs.executeScript(tab.id, { file: "login.js" }, function() {
+            chrome.tabs.executeScript(tabs[0].id, { file: "jquery.min.js" }, function() {
+                chrome.tabs.executeScript(tabs[0].id, { file: "login.js" }, function() {
                     console.log("login.js injected.");
-                    chrome.tabs.sendMessage(tab.id, { message: "login" });
+                    chrome.tabs.sendMessage(tabs[0].id, { message: "login" });
                 });
             });
         }
