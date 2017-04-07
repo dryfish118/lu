@@ -1,23 +1,24 @@
 {
     "manifest_version": 2,
-    "name": "抢单助手",
+    "name": "Lu Trade Helper",
     "version": "0.0.1",
-    "description": "陆金所抢单助手",
+    "description": "Help to get the best investment production.",
     "permissions": [
-        "alarms", "storage", "tabs", "http://*/*", "https://*/*"
+        "storage", "tabs", "webNavigation", "http://*/*", "https://*.lu.com/*"
     ],
     "options_page": "options.html",
     "background": {
-        "scripts": ["jquery-3.2.0.min.js", "background.js"],
+        "scripts": ["jquery.min.js", "background.js"],
         "persistent": false
     },
     "browser_action": {
         "default_icon": "lu.png",
-        "default_title": "陆金所抢单助手"
-    },
-    "content_scripts": [{
-        "matches": ["https://*/*"],
-        "js": ["jquery-3.2.0.min.js", "content.js"],
-        "run_at": "document_end"
-    }]
+        "default_title": "Lu Trade Helper"
+    }
+    // ,
+    // "content_scripts": [{
+    //     "matches": ["https://*.lu.com/*"],
+    //     "js": ["jquery.min.js", "content.js"],
+    //     "run_at": "document_end"
+    // }]
 }

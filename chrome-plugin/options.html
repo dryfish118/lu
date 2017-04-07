@@ -4,16 +4,18 @@
 <head>
     <meta charset="utf-8" />
     <title>抢单配置</title>
-    <script src="jquery-3.2.0.min.js"></script>
+    <script src="jquery.min.js"></script>
 </head>
 
 <body>
     <div>登录账户:<input type="text" id="username" /> </div>
     <div>登录密码:<input type="password" id="userpass" /> </div>
     <div>交易密码:<input type="password" id="tradepass" /> </div>
-    <div>最小投资金额:<input type="number" id="minmoney" value="5000" /></div>
-    <div>查询金额梯度:<input type="number" id="stepmoney" value="500" /></div>
-    <div>最小收益差：<input type="number" id="minrate" value="0.02" /></div>
+    <div>最大投资金额:<input type="number" id="maxmoney" /></div>
+    <div>最小投资金额:<input type="number" id="minmoney" /></div>
+    <div>查询金额梯度:<input type="number" id="stepmoney" /></div>
+    <div>最小期望利率：<input type="number" id="minrate" /></div>
+    <div>最小利率差：<input type="number" id="steprate" /></div>
     <div>
         <input type="submit" id="submit" />
         <input type="reset" id="reset" />
