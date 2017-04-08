@@ -8,7 +8,7 @@ chrome.runtime.onMessage.addListener(
                     $("#pwd").val(response);
                     $("#loginFlagnew").trigger("click");
 
-                    chrome.runtime.sendMessage({ message: "jump", object: "login", result: "Ok" });
+                    chrome.runtime.sendMessage({ message: "click", object: "login", result: "Ok" });
                 });
             });
         }

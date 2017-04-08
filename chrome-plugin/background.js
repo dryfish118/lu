@@ -4,23 +4,27 @@ var WorkFlow = {
     WorkFlow_Login: 3, // 准备登录
     WorkFlow_OpenLoginPage: 4, // 打开登录页面
     WorkFlow_LoginPageOpened: 5, // 登录页面已经打开
-    WorkFlow_LoginPageJumped: 6, // 点击登录按钮
+    WorkFlow_LoginPageClicked: 6, // 点击登录按钮
     WorkFlow_Logined: 7, // 已登录
     WorkFlow_AquireUser: 8, // 获取用户信息
     WorkFlow_AquireFundDetail: 9, // 获取用户可用金额
     WorkFlow_AquireMaxRate: 10, // 获得当前最大利率
     WorkFlow_AquireProductList: 11, // 获取产品信息
     WorkFlow_OpenProductPage: 12, // 打开产品页面
-    WorkFlow_Investment: 13, // 投资产品
-    WorkFlow_ProductPageJumped: 14, // 点击投资按钮
-    WorkFlow_Trade: 10,
+    WorkFlow_Product: 13, // 产品
+    WorkFlow_ProductPageClicked: 14, // 点击产品按钮
+    WorkFlow_Trade: 15, // 交易
+    WorkFlow_TradePageClicked: 16, // 点击下一步按钮
+    WorkFlow_Contract: 17, // 支付确认
+    WorkFlow_ContractPageClick: 18, // 点击下一步按钮
     WorkFlow_Agree: 11,
     WorkFlow_Password: 12,
     WorkFlow_Finish: 13,
 };
 
-var workFlow = WorkFlow.WorkFlow_Idle;
+var g_workFlow = WorkFlow.WorkFlow_Idle;
 
+var g_terminate;
 var g_uid;
 var g_userName;
 var g_mobileNo;
@@ -34,6 +38,8 @@ var url_account = "https://my.lu.com/my/account";
 var url_fund = "https://my.lu.com/my/yeb/fund-detail";
 var url_r030 = "https://list.lu.com/list/r030";
 var url_list = "https://list.lu.com";
+var url_trade = "https://trading.lu.com/trading/trade-info";
+var url_contract = "https://trading.lu.com/trading/contract-info";
 
 function isUrlMatch(url1, url2) {
     url1 = url1.toLocaleLowerCase();
@@ -69,7 +75,7 @@ function getMaxMoney() {
     if (localStorage.maxmoney === undefined) {
         return 0;
     } else {
-        return localStorage.maxmoney;
+        return parseInt(localStorage.maxmoney);
     }
 }
 
@@ -77,7 +83,7 @@ function getMinMoney() {
     if (localStorage.minmoney === undefined) {
         return 5000;
     } else {
-        return localStorage.minmoney;
+        return parseInt(localStorage.minmoney);
     }
 }
 
@@ -85,7 +91,7 @@ function getStepMoney() {
     if (localStorage.stepmoney === undefined) {
         return 500;
     } else {
-        return localStorage.stepmoney;
+        return parseInt(localStorage.stepmoney);
     }
 }
 
@@ -93,7 +99,7 @@ function getMinRate() {
     if (localStorage.minrate === undefined) {
         return 4.8;
     } else {
-        return localStorage.minrate;
+        return parseFloat(localStorage.minrate);
     }
 }
 
@@ -101,7 +107,7 @@ function getStepRate() {
     if (localStorage.steprate === undefined) {
         return 0.02;
     } else {
-        return localStorage.steprate;
+        return parseFloat(localStorage.steprate);
     }
 }
 
@@ -126,24 +132,30 @@ chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
         }
     } else if (request.message === "set") {
         localStorage[request.object] = request.value;
-    } else if (request.message === "jump") {
+    } else if (request.message === "click") {
         if (request.object === "login") {
-            workFlow = WorkFlow.WorkFlow_LoginPageJumped;
-            console.log("WorkFlow_LoginPageJumped");
-        } else if (request.object === "investment") {
+            g_workFlow = WorkFlow.WorkFlow_LoginPageClicked;
+            console.log("WorkFlow_LoginPageClicked");
+        } else if (request.object === "product") {
             if (request.result === "Ok") {
-                workFlow = WorkFlow.WorkFlow_ProductPageJumped;
-                console.log("WorkFlow_ProductPageJumped");
+                g_workFlow = WorkFlow.WorkFlow_ProductPageClicked;
+                console.log("WorkFlow_ProductPageClicked");
             } else {
                 console.log("the product is sold, refresh & restart after 5s.");
-                setTimeout(_aquireProductList(g_money - parseInt(getStepMoney())), 5 * 1000);
+                setTimeout(_aquireProductList(g_money - getStepMoney()), 5 * 1000);
             }
+        } else if (request.object === "trade") {
+            g_workFlow = WorkFlow.WorkFlow_TradePageClicked;
+            console.log("WorkFlow_TradePageClicked");
+        } else if (request.object === "contract") {
+            g_workFlow = WorkFlow.WorkFlow_ContractPageClick;
+            console.log("WorkFlow_ContractPageClick");
         }
     }
 });
 
 chrome.webNavigation.onCompleted.addListener(function(details) {
-    switch (workFlow) {
+    switch (g_workFlow) {
         case WorkFlow.WorkFlow_OpenLoginPage:
             {
                 if (isUrlMatch(url_login, details.url)) {
@@ -153,7 +165,7 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
                 break;
             }
         case WorkFlow.WorkFlow_LoginPageOpened:
-        case WorkFlow.WorkFlow_LoginPageJumped:
+        case WorkFlow.WorkFlow_LoginPageClicked:
             {
                 if (isUrlMatch(url_account, details.url)) {
                     console.log("onCompleted %s", details.url);
@@ -169,35 +181,107 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
             {
                 if (isUrlMatch(url_monitor, details.url)) {
                     console.log("onCompleted %s", details.url);
-                    doInvestment();
+                    doProduct();
                 }
                 break;
             }
-        case WorkFlow.WorkFlow_Investment:
-        case WorkFlow.WorkFlow_ProductPageJumped:
+        case WorkFlow.WorkFlow_Product:
+        case WorkFlow.WorkFlow_ProductPageClicked:
             {
                 if (isUrlMatch(url_monitor, details.url)) {
                     console.log("onCompleted %s", details.url);
+                    doTrade();
+                }
+                break;
+            }
+        case WorkFlow.WorkFlow_Trade:
+        case WorkFlow.WorkFlow_TradePageClicked:
+            {
+                if (isUrlMatch(url_monitor, details.url)) {
+                    console.log("onCompleted %s", details.url);
+                    doContract();
+                }
+                break;
+            }
+        case WorkFlow.WorkFlow_Contract:
+        case WorkFlow.WorkFlow_ContractPageClick:
+            {
+                if (isUrlMatch(url_monitor, details.url)) {
+                    console.log("onCompleted %s", details.url);
+                    //doContract();
                 }
                 break;
             }
     }
 });
 
-function doInvestment() {
-    workFlow = WorkFlow.WorkFlow_Investment;
-    console.log("WorkFlow_Investment");
+function doContract() {
+    if (g_terminate) {
+        g_terminate = false;
+        return;
+    }
+
+    g_workFlow = WorkFlow.WorkFlow_Contract;
+    console.log("WorkFlow_Contract");
+
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+        if (tabs === undefined) {
+            console.log("the contract page is not open.");
+        } else {
+            url_monitor = url_contract;
+            chrome.tabs.executeScript(tabs[0].id, { file: "jquery.min.js" }, function() {
+                chrome.tabs.executeScript(tabs[0].id, { file: "contract.js" }, function() {
+                    console.log("contract.js injected.");
+                    chrome.tabs.sendMessage(tabs[0].id, { message: "contract" });
+                });
+            });
+        }
+    });
+}
+
+function doTrade() {
+    if (g_terminate) {
+        g_terminate = false;
+        return;
+    }
+
+    g_workFlow = WorkFlow.WorkFlow_Trade;
+    console.log("WorkFlow_Trace");
+
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+        if (tabs === undefined) {
+            console.log("the trade page is not open.");
+        } else {
+            url_monitor = url_contract;
+            chrome.tabs.executeScript(tabs[0].id, { file: "jquery.min.js" }, function() {
+                chrome.tabs.executeScript(tabs[0].id, { file: "trade.js" }, function() {
+                    console.log("trade.js injected.");
+                    chrome.tabs.sendMessage(tabs[0].id, { message: "trade" });
+                });
+            });
+        }
+    });
+}
+
+function doProduct() {
+    if (g_terminate) {
+        g_terminate = false;
+        return;
+    }
+
+    g_workFlow = WorkFlow.WorkFlow_Product;
+    console.log("WorkFlow_Product");
 
     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
         if (tabs === undefined) {
             console.log("the product page is not open.");
             openProductPage();
         } else {
-            url_monitor = "https://trading.lu.com/trading/trade-info";
+            url_monitor = url_contract;
             chrome.tabs.executeScript(tabs[0].id, { file: "jquery.min.js" }, function() {
-                chrome.tabs.executeScript(tabs[0].id, { file: "investment.js" }, function() {
-                    console.log("investment.js injected.");
-                    chrome.tabs.sendMessage(tabs[0].id, { message: "investment" });
+                chrome.tabs.executeScript(tabs[0].id, { file: "product.js" }, function() {
+                    console.log("product.js injected.");
+                    chrome.tabs.sendMessage(tabs[0].id, { message: "product" });
                 });
             });
         }
@@ -205,7 +289,12 @@ function doInvestment() {
 }
 
 function openProductPage() {
-    workFlow = WorkFlow.WorkFlow_OpenProductPage;
+    if (g_terminate) {
+        g_terminate = false;
+        return;
+    }
+
+    g_workFlow = WorkFlow.WorkFlow_OpenProductPage;
     console.log("WorkFlow_OpenProductPage");
 
     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
@@ -237,12 +326,17 @@ function _aquireProductList(minMoney) {
 }
 
 function aquireProductList(minMoney) {
-    workFlow = WorkFlow.WorkFlow_AquireProductList;
+    if (g_terminate) {
+        g_terminate = false;
+        return;
+    }
+
+    g_workFlow = WorkFlow.WorkFlow_AquireProductList;
     console.log("WorkFlow_AquireProductList (%f%% %f %f)", g_rate, minMoney, g_money);
 
-    if (g_money - minMoney > parseInt(getMinMoney()) || minMoney < parseInt(getMinMoney())) {
+    if (g_money - minMoney > getMinMoney() || minMoney < getMinMoney()) {
         console.log("poor man, refresh & restart after 5s.");
-        setTimeout(_aquireProductList(g_money - parseInt(getStepMoney())), 5 * 1000);
+        setTimeout(_aquireProductList(g_money - getStepMoney()), 5 * 1000);
         return;
     }
 
@@ -256,12 +350,12 @@ function aquireProductList(minMoney) {
             var productList = doc.find(".product-list");
             if (productList === undefined) {
                 console.log("failed to aquire the product list, refresh & restart after 5s.");
-                setTimeout(_aquireProductList(g_money - parseInt(getStepMoney())), 5 * 1000);
+                setTimeout(_aquireProductList(g_money - getStepMoney()), 5 * 1000);
                 return;
             }
             if (productList.length === 0) {
                 console.log("failed to aquire the product list between from %d to %d", minMoney, g_money);
-                aquireProductList(minMoney - parseInt(getStepMoney()));
+                aquireProductList(minMoney - getStepMoney());
                 return;
             }
             var products = [];
@@ -287,7 +381,7 @@ function aquireProductList(minMoney) {
                     return true;
                 }
                 product.rate = parseFloat($(rate).text());
-                if (g_rate - product.rate > parseFloat(getStepRate())) {
+                if (g_rate - product.rate > getStepRate()) {
                     console.log("the product rate %f is lower than the min rate.", product.rate);
                     return false;
                 }
@@ -333,7 +427,7 @@ function aquireProductList(minMoney) {
 
             if (products.length === 0) {
                 console.log("failed to aquire any matched product, refresh & restart after 5s.");
-                setTimeout(_aquireProductList(g_money - parseInt(getStepMoney())), 5 * 1000);
+                setTimeout(_aquireProductList(g_money - getStepMoney()), 5 * 1000);
                 return;
             }
 
@@ -342,14 +436,19 @@ function aquireProductList(minMoney) {
         },
         error: function() {
             console.log("failed to aquire the product list.");
-            workFlow = WorkFlow.WorkFlow_Idle;
+            g_workFlow = WorkFlow.WorkFlow_Idle;
             console.log("WorkFlow_Idle");
         }
     });
 }
 
 function aquireMaxRate() {
-    workFlow = WorkFlow.WorkFlow_AquireMaxRate;
+    if (g_terminate) {
+        g_terminate = false;
+        return;
+    }
+
+    g_workFlow = WorkFlow.WorkFlow_AquireMaxRate;
     console.log("WorkFlow_AquireMaxRate");
 
     var strData = "currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false";
@@ -361,40 +460,45 @@ function aquireMaxRate() {
             var product = $(doc).find(".product-list").get(0);
             if (product === undefined) {
                 console.log("failed to aquire the product information.");
-                workFlow = WorkFlow.WorkFlow_Idle;
+                g_workFlow = WorkFlow.WorkFlow_Idle;
                 console.log("WorkFlow_Idle");
                 return;
             }
             var rate = $(product).find(".interest-rate .num-style").get(0);
             if (rate === undefined) {
                 console.log("failed to aquire the max rate.");
-                workFlow = WorkFlow.WorkFlow_Idle;
+                g_workFlow = WorkFlow.WorkFlow_Idle;
                 console.log("WorkFlow_Idle");
                 return;
             }
             g_rate = parseFloat($(rate).text());
             console.log("max rate:\t%f", g_rate);
 
-            var minRate = parseFloat(getMinRate());
-            if (minRate !== 0 && g_rate < minRate + parseFloat(getStepRate())) {
+            var minRate = getMinRate();
+            if (minRate !== 0 && g_rate < minRate + getStepRate()) {
                 console.log("current max rate is lower than the min rate %f", minRate);
-                workFlow = WorkFlow.WorkFlow_Idle;
+                g_workFlow = WorkFlow.WorkFlow_Idle;
                 console.log("WorkFlow_Idle");
                 return;
             }
 
-            aquireProductList(g_money - parseInt(getStepMoney()));
+            aquireProductList(g_money - getStepMoney());
         },
         error: function() {
             console.log("failed to aquire the product list.");
-            workFlow = WorkFlow.WorkFlow_Idle;
+            g_workFlow = WorkFlow.WorkFlow_Idle;
             console.log("WorkFlow_Idle");
         }
     });
 }
 
 function aquireFundDetail() {
-    workFlow = WorkFlow.WorkFlow_AquireFundDetail;
+    if (g_terminate) {
+        g_terminate = false;
+        return;
+    }
+
+    g_workFlow = WorkFlow.WorkFlow_AquireFundDetail;
     console.log("WorkFlow_AquireFundDetail");
 
     $.ajax({
@@ -405,23 +509,23 @@ function aquireFundDetail() {
             var amount = doc.find(".available-balance-wrap > .balance-amount").get(0);
             if (amount === undefined) {
                 console.log("failed to aquire the available amount");
-                workFlow = WorkFlow.WorkFlow_Idle;
+                g_workFlow = WorkFlow.WorkFlow_Idle;
                 console.log("WorkFlow_Idle");
                 return;
             }
             var availableMoney = parseFloat($(amount).text().replace(",", ""));
             console.log("available money:\t%f", availableMoney);
 
-            var maxMoney = parseFloat(getMaxMoney());
+            var maxMoney = getMaxMoney();
             if (maxMoney !== 0 && maxMoney < availableMoney) {
                 console.log("use the max money:\t%f", maxMoney);
                 availableMoney = maxMoney;
             }
 
             g_money = parseInt(availableMoney);
-            if (g_money < parseInt(getMinMoney())) {
+            if (g_money < getMinMoney()) {
                 console.log("poor man, go to bed and have a good dream.");
-                workFlow = WorkFlow.WorkFlow_Idle;
+                g_workFlow = WorkFlow.WorkFlow_Idle;
                 console.log("WorkFlow_Idle");
                 return;
             }
@@ -430,14 +534,19 @@ function aquireFundDetail() {
         },
         error: function() {
             console.log("failed to aquire the fund detail");
-            workFlow = WorkFlow.WorkFlow_Idle;
+            g_workFlow = WorkFlow.WorkFlow_Idle;
             console.log("WorkFlow_Idle");
         }
     });
 }
 
 function aquireUserInfo(data) {
-    workFlow = WorkFlow.WorkFlow_AquireUser;
+    if (g_terminate) {
+        g_terminate = false;
+        return;
+    }
+
+    g_workFlow = WorkFlow.WorkFlow_AquireUser;
     console.log("WorkFlow_AquireUser");
 
     g_uid = data.uid;
@@ -451,14 +560,19 @@ function aquireUserInfo(data) {
 }
 
 function doLogin() {
-    workFlow = WorkFlow.WorkFlow_Login;
+    if (g_terminate) {
+        g_terminate = false;
+        return;
+    }
+
+    g_workFlow = WorkFlow.WorkFlow_Login;
     console.log("WorkFlow_Login");
 
     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
         if (tabs === undefined) {
             console.log("open the login page in the new tab");
             chrome.tabs.create({ url: url_login, selected: true }, function() {
-                workFlow = WorkFlow.WorkFlow_OpenLoginPage;
+                g_workFlow = WorkFlow.WorkFlow_OpenLoginPage;
                 console.log("WorkFlow_OpenLoginPage");
             });
         } else {
@@ -467,13 +581,13 @@ function doLogin() {
             if (!isUrlMatch(url_login, strUrl)) {
                 console.log("open the login page in the current tab %d", tabs[0].id);
                 chrome.tabs.update({ openerTabId: tabs[0].id, url: url_login }, function() {
-                    workFlow = WorkFlow.WorkFlow_OpenLoginPage;
+                    g_workFlow = WorkFlow.WorkFlow_OpenLoginPage;
                     console.log("WorkFlow_OpenLoginPage");
                 });
                 return;
             }
 
-            workFlow = WorkFlow.WorkFlow_LoginPageOpened;
+            g_workFlow = WorkFlow.WorkFlow_LoginPageOpened;
             console.log("WorkFlow_LoginPageOpened");
             chrome.tabs.executeScript(tabs[0].id, { file: "jquery.min.js" }, function() {
                 chrome.tabs.executeScript(tabs[0].id, { file: "login.js" }, function() {
@@ -486,7 +600,12 @@ function doLogin() {
 }
 
 function startWork() {
-    workFlow = WorkFlow.WorkFlow_Start;
+    if (g_terminate) {
+        g_terminate = false;
+        return;
+    }
+
+    g_workFlow = WorkFlow.WorkFlow_Start;
     console.log("WorkFlow_Start");
 
     $.ajax({
@@ -496,22 +615,31 @@ function startWork() {
             if (data.uid === undefined) {
                 doLogin();
             } else {
-                workFlow = WorkFlow.WorkFlow_Logined;
+                g_workFlow = WorkFlow.WorkFlow_Logined;
                 console.log("WorkFlow_Logined");
                 aquireUserInfo(data);
             }
         },
         error: function() {
             console.log("failed to aquire the user information.");
-            workFlow = WorkFlow.WorkFlow_Idle;
+            g_workFlow = WorkFlow.WorkFlow_Idle;
             console.log("WorkFlow_Idle");
         }
     });
 }
 
 chrome.browserAction.onClicked.addListener(function() {
-    workFlow = WorkFlow.WorkFlow_Idle;
-    console.log("WorkFlow_Idle");
+    if (g_workFlow !== WorkFlow.WorkFlow_Idle && !g_terminate) {
+        console.log("terminated!");
+        g_workFlow = WorkFlow.WorkFlow_Idle;
+        console.log("WorkFlow_Idle");
 
-    startWork();
+        g_terminate = true;
+    } else {
+        g_workFlow = WorkFlow.WorkFlow_Idle;
+        console.log("WorkFlow_Idle");
+
+        g_terminate = false;
+        startWork();
+    }
 });
