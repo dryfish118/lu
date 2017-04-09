@@ -25,6 +25,7 @@ var WorkFlow = {
 var g_workFlow = WorkFlow.WorkFlow_Idle;
 
 var g_terminate;
+var g_tab;
 var g_uid;
 var g_userName;
 var g_mobileNo;
@@ -155,63 +156,50 @@ chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
 });
 
 chrome.webNavigation.onCompleted.addListener(function(details) {
-    switch (g_workFlow) {
-        case WorkFlow.WorkFlow_OpenLoginPage:
-            {
-                if (isUrlMatch(url_login, details.url)) {
-                    console.log("onCompleted %s", details.url);
+    if (isUrlMatch(url_monitor, details.url)) {
+        console.log("onCompleted %s", details.url);
+        switch (g_workFlow) {
+            case WorkFlow.WorkFlow_OpenLoginPage:
+                {
                     doLogin();
+                    break;
                 }
-                break;
-            }
-        case WorkFlow.WorkFlow_LoginPageOpened:
-        case WorkFlow.WorkFlow_LoginPageClicked:
-            {
-                if (isUrlMatch(url_account, details.url)) {
-                    console.log("onCompleted %s", details.url);
+            case WorkFlow.WorkFlow_LoginPageOpened:
+            case WorkFlow.WorkFlow_LoginPageClicked:
+                {
                     startWork();
-                } else if (isUrlMatch(url_login, details.url)) {
-                    console.log("onCompleted %s", details.url);
-                    console.log("failed to login, relogin");
-                    doLogin();
+                    break;
                 }
-                break;
-            }
-        case WorkFlow.WorkFlow_OpenProductPage:
-            {
-                if (isUrlMatch(url_monitor, details.url)) {
-                    console.log("onCompleted %s", details.url);
+            case WorkFlow.WorkFlow_OpenProductPage:
+                {
                     doProduct();
+                    break;
                 }
-                break;
-            }
-        case WorkFlow.WorkFlow_Product:
-        case WorkFlow.WorkFlow_ProductPageClicked:
-            {
-                if (isUrlMatch(url_monitor, details.url)) {
-                    console.log("onCompleted %s", details.url);
+            case WorkFlow.WorkFlow_Product:
+            case WorkFlow.WorkFlow_ProductPageClicked:
+                {
                     doTrade();
+                    break;
                 }
-                break;
-            }
-        case WorkFlow.WorkFlow_Trade:
-        case WorkFlow.WorkFlow_TradePageClicked:
-            {
-                if (isUrlMatch(url_monitor, details.url)) {
-                    console.log("onCompleted %s", details.url);
+            case WorkFlow.WorkFlow_Trade:
+            case WorkFlow.WorkFlow_TradePageClicked:
+                {
                     doContract();
+                    break;
                 }
-                break;
-            }
-        case WorkFlow.WorkFlow_Contract:
-        case WorkFlow.WorkFlow_ContractPageClick:
-            {
-                if (isUrlMatch(url_monitor, details.url)) {
-                    console.log("onCompleted %s", details.url);
+            case WorkFlow.WorkFlow_Contract:
+            case WorkFlow.WorkFlow_ContractPageClick:
+                {
                     //doContract();
+                    break;
                 }
-                break;
-            }
+        }
+    } else if ((g_workFlow === WorkFlow.WorkFlow_LoginPageOpened ||
+            g_workFlow === WorkFlow.WorkFlow_LoginPageOpened) &&
+        isUrlMatch(url_login, details.url)) {
+        console.log("onCompleted %s", details.url);
+        console.log("failed to login, try again.");
+        doLogin();
     }
 });
 
@@ -224,18 +212,12 @@ function doContract() {
     g_workFlow = WorkFlow.WorkFlow_Contract;
     console.log("WorkFlow_Contract");
 
-    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-        if (tabs === undefined) {
-            console.log("the contract page is not open.");
-        } else {
-            url_monitor = url_contract;
-            chrome.tabs.executeScript(tabs[0].id, { file: "jquery.min.js" }, function() {
-                chrome.tabs.executeScript(tabs[0].id, { file: "contract.js" }, function() {
-                    console.log("contract.js injected.");
-                    chrome.tabs.sendMessage(tabs[0].id, { message: "contract" });
-                });
-            });
-        }
+    url_monitor = url_contract;
+    chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
+        chrome.tabs.executeScript(g_tab.id, { file: "contract.js" }, function() {
+            console.log("contract.js injected.");
+            chrome.tabs.sendMessage(g_tab.id, { message: "contract" });
+        });
     });
 }
 
@@ -248,18 +230,12 @@ function doTrade() {
     g_workFlow = WorkFlow.WorkFlow_Trade;
     console.log("WorkFlow_Trace");
 
-    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-        if (tabs === undefined) {
-            console.log("the trade page is not open.");
-        } else {
-            url_monitor = url_contract;
-            chrome.tabs.executeScript(tabs[0].id, { file: "jquery.min.js" }, function() {
-                chrome.tabs.executeScript(tabs[0].id, { file: "trade.js" }, function() {
-                    console.log("trade.js injected.");
-                    chrome.tabs.sendMessage(tabs[0].id, { message: "trade" });
-                });
-            });
-        }
+    url_monitor = url_contract;
+    chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
+        chrome.tabs.executeScript(g_tab.id, { file: "trade.js" }, function() {
+            console.log("trade.js injected.");
+            chrome.tabs.sendMessage(g_tab.id, { message: "trade" });
+        });
     });
 }
 
@@ -272,39 +248,12 @@ function doProduct() {
     g_workFlow = WorkFlow.WorkFlow_Product;
     console.log("WorkFlow_Product");
 
-    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-        if (tabs === undefined) {
-            console.log("the product page is not open.");
-            openProductPage();
-        } else {
-            url_monitor = url_contract;
-            chrome.tabs.executeScript(tabs[0].id, { file: "jquery.min.js" }, function() {
-                chrome.tabs.executeScript(tabs[0].id, { file: "product.js" }, function() {
-                    console.log("product.js injected.");
-                    chrome.tabs.sendMessage(tabs[0].id, { message: "product" });
-                });
-            });
-        }
-    });
-}
-
-function openProductPage() {
-    if (g_terminate) {
-        g_terminate = false;
-        return;
-    }
-
-    g_workFlow = WorkFlow.WorkFlow_OpenProductPage;
-    console.log("WorkFlow_OpenProductPage");
-
-    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-        if (tabs === undefined) {
-            console.log("open the product page in the new tab");
-            chrome.tabs.create({ url: url_monitor, selected: true });
-        } else {
-            console.log("open the product page in the current tab %d", tabs[0].id);
-            chrome.tabs.update({ openerTabId: tabs[0].id, url: url_monitor });
-        }
+    url_monitor = url_contract;
+    chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
+        chrome.tabs.executeScript(g_tab.id, { file: "product.js" }, function() {
+            console.log("product.js injected.");
+            chrome.tabs.sendMessage(g_tab.id, { message: "product" });
+        });
     });
 }
 
@@ -431,8 +380,11 @@ function aquireProductList(minMoney) {
                 return;
             }
 
+
+            g_workFlow = WorkFlow.WorkFlow_OpenProductPage;
+            console.log("WorkFlow_OpenProductPage");
             url_monitor = url_list + products[0].url;
-            openProductPage();
+            chrome.tabs.update({ openerTabId: g_tab.id, url: url_monitor });
         },
         error: function() {
             console.log("failed to aquire the product list.");
@@ -568,34 +520,25 @@ function doLogin() {
     g_workFlow = WorkFlow.WorkFlow_Login;
     console.log("WorkFlow_Login");
 
-    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-        if (tabs === undefined) {
-            console.log("open the login page in the new tab");
-            chrome.tabs.create({ url: url_login, selected: true }, function() {
-                g_workFlow = WorkFlow.WorkFlow_OpenLoginPage;
-                console.log("WorkFlow_OpenLoginPage");
-            });
-        } else {
-            var strUrl = tabs[0].url;
-            console.log("current url is '%s'", strUrl);
-            if (!isUrlMatch(url_login, strUrl)) {
-                console.log("open the login page in the current tab %d", tabs[0].id);
-                chrome.tabs.update({ openerTabId: tabs[0].id, url: url_login }, function() {
-                    g_workFlow = WorkFlow.WorkFlow_OpenLoginPage;
-                    console.log("WorkFlow_OpenLoginPage");
-                });
-                return;
-            }
+    console.log("current url is '%s'", g_tab.url);
+    if (!isUrlMatch(url_login, g_tab.url)) {
+        console.log("open the login page in the current tab %d", g_tab.id);
+        url_monitor = url_login;
+        chrome.tabs.update({ openerTabId: g_tab.id, url: url_login }, function() {
+            g_workFlow = WorkFlow.WorkFlow_OpenLoginPage;
+            console.log("WorkFlow_OpenLoginPage");
+        });
+        return;
+    }
 
-            g_workFlow = WorkFlow.WorkFlow_LoginPageOpened;
-            console.log("WorkFlow_LoginPageOpened");
-            chrome.tabs.executeScript(tabs[0].id, { file: "jquery.min.js" }, function() {
-                chrome.tabs.executeScript(tabs[0].id, { file: "login.js" }, function() {
-                    console.log("login.js injected.");
-                    chrome.tabs.sendMessage(tabs[0].id, { message: "login" });
-                });
-            });
-        }
+    g_workFlow = WorkFlow.WorkFlow_LoginPageOpened;
+    console.log("WorkFlow_LoginPageOpened");
+    url_monitor = url_account;
+    chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
+        chrome.tabs.executeScript(g_tab.id, { file: "login.js" }, function() {
+            console.log("login.js injected.");
+            chrome.tabs.sendMessage(g_tab.id, { message: "login" });
+        });
     });
 }
 
@@ -636,6 +579,14 @@ chrome.browserAction.onClicked.addListener(function() {
 
         g_terminate = true;
     } else {
+        chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+            if (tabs === undefined) {
+                console.log("please run in chrome browser.");
+                return;
+            }
+            g_tab = tabs[0];
+        });
+
         g_workFlow = WorkFlow.WorkFlow_Idle;
         console.log("WorkFlow_Idle");
 
