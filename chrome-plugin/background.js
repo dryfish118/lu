@@ -11,12 +11,10 @@ var WorkFlow = {
     WorkFlow_AquireMaxRate: 10, // 获得当前最大利率
     WorkFlow_AquireProductList: 11, // 获取产品信息
     WorkFlow_OpenProductPage: 12, // 打开产品页面
-    WorkFlow_Product: 13, // 产品
-    WorkFlow_ProductPageClicked: 14, // 点击产品按钮
-    WorkFlow_Trade: 15, // 交易
-    WorkFlow_TradePageClicked: 16, // 点击下一步按钮
-    WorkFlow_Contract: 17, // 支付确认
-    WorkFlow_ContractPageClick: 18, // 点击下一步按钮
+    WorkFlow_InjectProduct: 13, // 产品
+    WorkFlow_InjectTrade: 14, // 交易
+    WorkFlow_InjectContract: 15, // 支付确认
+    WorkFlow_InjectSecurity: 16, // 支付确认
     WorkFlow_Agree: 11,
     WorkFlow_Password: 12,
     WorkFlow_Finish: 13,
@@ -41,6 +39,7 @@ var url_r030 = "https://list.lu.com/list/r030";
 var url_list = "https://list.lu.com";
 var url_trade = "https://trading.lu.com/trading/trade-info";
 var url_contract = "https://trading.lu.com/trading/contract-info";
+var url_security = "https://trading.lu.com/trading/security-valid";
 
 function isUrlMatch(url1, url2) {
     url1 = url1.toLocaleLowerCase();
@@ -69,6 +68,14 @@ function getTradePass() {
         return "";
     } else {
         return localStorage.tradepass;
+    }
+}
+
+function getRefresh() {
+    if (localStorage.refresh === undefined) {
+        return 3000;
+    } else {
+        return parseInt(localStorage.refresh);
     }
 }
 
@@ -120,6 +127,8 @@ chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
             sendResponse(getUserPass());
         } else if (request.object === "tradepass") {
             sendResponse(getTradePass());
+        } else if (request.object === "refresh") {
+            sendResponse(getRefresh());
         } else if (request.object === "maxmoney") {
             sendResponse(getMaxMoney());
         } else if (request.object === "minmoney") {
@@ -137,20 +146,14 @@ chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
         if (request.object === "login") {
             g_workFlow = WorkFlow.WorkFlow_LoginPageClicked;
             console.log("WorkFlow_LoginPageClicked");
-        } else if (request.object === "product") {
-            if (request.result === "Ok") {
-                g_workFlow = WorkFlow.WorkFlow_ProductPageClicked;
-                console.log("WorkFlow_ProductPageClicked");
-            } else {
+        } else if (request.object === "product" ||
+            request.object === "trade" ||
+            request.object === "contract" ||
+            request.object === "security") {
+            if (request.result === "No") {
                 console.log("the product is sold, refresh & restart after 5s.");
-                setTimeout(_aquireProductList(g_money - getStepMoney()), 5 * 1000);
+                setTimeout(_aquireProductList(g_money - getStepMoney()), getRefresh());
             }
-        } else if (request.object === "trade") {
-            g_workFlow = WorkFlow.WorkFlow_TradePageClicked;
-            console.log("WorkFlow_TradePageClicked");
-        } else if (request.object === "contract") {
-            g_workFlow = WorkFlow.WorkFlow_ContractPageClick;
-            console.log("WorkFlow_ContractPageClick");
         }
     }
 });
@@ -172,25 +175,30 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
                 }
             case WorkFlow.WorkFlow_OpenProductPage:
                 {
-                    doProduct();
+                    injectProduct();
                     break;
                 }
-            case WorkFlow.WorkFlow_Product:
-            case WorkFlow.WorkFlow_ProductPageClicked:
+            case WorkFlow.WorkFlow_InjectProduct:
                 {
-                    doTrade();
+                    injectTrade();
                     break;
                 }
-            case WorkFlow.WorkFlow_Trade:
+            case WorkFlow.WorkFlow_InjectTrade:
             case WorkFlow.WorkFlow_TradePageClicked:
                 {
-                    doContract();
+                    injectContract();
                     break;
                 }
-            case WorkFlow.WorkFlow_Contract:
+            case WorkFlow.WorkFlow_InjectContract:
             case WorkFlow.WorkFlow_ContractPageClick:
                 {
-                    //doContract();
+                    injectSecurity();
+                    break;
+                }
+            case WorkFlow.WorkFlow_InjectSecurity:
+            case WorkFlow.WorkFlow_SecurityPageClick:
+                {
+                    //doSecurity();
                     break;
                 }
         }
@@ -203,16 +211,34 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
     }
 });
 
-function doContract() {
+function injectSecurity() {
     if (g_terminate) {
         g_terminate = false;
         return;
     }
 
-    g_workFlow = WorkFlow.WorkFlow_Contract;
-    console.log("WorkFlow_Contract");
+    g_workFlow = WorkFlow.WorkFlow_InjectSecurity;
+    console.log("WorkFlow_InjectSecurity");
 
-    url_monitor = url_contract;
+    url_monitor = url_security;
+    chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
+        chrome.tabs.executeScript(g_tab.id, { file: "security.js" }, function() {
+            console.log("security.js injected.");
+            chrome.tabs.sendMessage(g_tab.id, { message: "security" });
+        });
+    });
+}
+
+function injectContract() {
+    if (g_terminate) {
+        g_terminate = false;
+        return;
+    }
+
+    g_workFlow = WorkFlow.WorkFlow_InjectContract;
+    console.log("WorkFlow_InjectContract");
+
+    url_monitor = url_security;
     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
         chrome.tabs.executeScript(g_tab.id, { file: "contract.js" }, function() {
             console.log("contract.js injected.");
@@ -221,13 +247,13 @@ function doContract() {
     });
 }
 
-function doTrade() {
+function injectTrade() {
     if (g_terminate) {
         g_terminate = false;
         return;
     }
 
-    g_workFlow = WorkFlow.WorkFlow_Trade;
+    g_workFlow = WorkFlow.WorkFlow_InjectTrade;
     console.log("WorkFlow_Trace");
 
     url_monitor = url_contract;
@@ -239,16 +265,16 @@ function doTrade() {
     });
 }
 
-function doProduct() {
+function injectProduct() {
     if (g_terminate) {
         g_terminate = false;
         return;
     }
 
-    g_workFlow = WorkFlow.WorkFlow_Product;
-    console.log("WorkFlow_Product");
+    g_workFlow = WorkFlow.WorkFlow_InjectProduct;
+    console.log("WorkFlow_InjectProduct");
 
-    url_monitor = url_contract;
+    url_monitor = url_trade;
     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
         chrome.tabs.executeScript(g_tab.id, { file: "product.js" }, function() {
             console.log("product.js injected.");
@@ -285,7 +311,7 @@ function aquireProductList(minMoney) {
 
     if (g_money - minMoney > getMinMoney() || minMoney < getMinMoney()) {
         console.log("poor man, refresh & restart after 5s.");
-        setTimeout(_aquireProductList(g_money - getStepMoney()), 5 * 1000);
+        setTimeout(_aquireProductList(g_money - getStepMoney()), getRefresh());
         return;
     }
 
@@ -299,7 +325,7 @@ function aquireProductList(minMoney) {
             var productList = doc.find(".product-list");
             if (productList === undefined) {
                 console.log("failed to aquire the product list, refresh & restart after 5s.");
-                setTimeout(_aquireProductList(g_money - getStepMoney()), 5 * 1000);
+                setTimeout(_aquireProductList(g_money - getStepMoney()), getRefresh());
                 return;
             }
             if (productList.length === 0) {
@@ -376,13 +402,13 @@ function aquireProductList(minMoney) {
 
             if (products.length === 0) {
                 console.log("failed to aquire any matched product, refresh & restart after 5s.");
-                setTimeout(_aquireProductList(g_money - getStepMoney()), 5 * 1000);
+                setTimeout(_aquireProductList(g_money - getStepMoney()), getRefresh());
                 return;
             }
 
 
             g_workFlow = WorkFlow.WorkFlow_OpenProductPage;
-            console.log("WorkFlow_OpenProductPage");
+            console.log("WorkFlow_OpenProductPage %s", products[0].url);
             url_monitor = url_list + products[0].url;
             chrome.tabs.update({ openerTabId: g_tab.id, url: url_monitor });
         },
