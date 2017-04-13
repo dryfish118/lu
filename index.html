@@ -1,16 +1,65 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>Welcome to nginx!</title>
-<style>
-    body {
-        width: 35em;
-        margin: 0 auto;
-        font-family: Tahoma, Verdana, Arial, sans-serif;
-    }
-</style>
+    <meta charset="utf-8" />
+    <title>Welcome to nginx!</title>
+    <style>
+        body {
+            width: 35em;
+            margin: 0 auto;
+            font-family: Tahoma, Verdana, Arial, sans-serif;
+        }
+    </style>
+    <script src="chrome-plugin/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(function() {
+            $("#button1").click(function() {
+                console.log("click button1");
+                $("#button2").trigger("click");
+                //$("#kycConfirmCB").trigger("click");
+            });
+            $("#button2").click(function() {
+                console.log("click button2");
+                $("<div><input type='button' id='button3' value='button3' /></div>").insertAfter($(this).parent());
+            });
+            $("body").delegate("#button3", "click", function() {
+                $("body").bind("DOMNodeInserted", function() {
+                    if ($("#button4") !== undefined) {
+                        console.log("button4 loaded");
+                    }
+                });
+                console.log("click button3");
+                $("<div><input type='button' id='button4' value='button4' /></div>").insertAfter($(this).parent());
+            });
+            //$("body").delegate("#button4", "load", function() {
+
+            $("#kycConfirmCB").click(function() {
+                var confirm = $("#kycOtpConfirm").first();
+                $(confirm).html("<span id='btnconfirm'>" + $(confirm).html() + "</span>");
+                $("#btnconfirm").trigger("click");
+            });
+            $("body").delegate("#btnconfirm", "click", function() {
+                console.log("click btnconfirm");
+            });
+        });
+    </script>
 </head>
+
 <body>
-<h1>Welcome to Tao!</h1>
+    <h1>Welcome to Tao!</h1>
+    <div><input type="button" id="button1" value="button1" /></div>
+    <div><input type="button" id="button2" value="button2" /></div>
+    <p class="agree-label">
+        <input type="checkbox" id="kycConfirmCB" />
+        <label for="kycConfirmCB">本人已阅读风险提示和合同条款，并已知悉产品风险，愿意继续购买本产品。</label>
+    </p>
+    <div class="kyc-otp-container">
+        <div id="kycOpt"></div>
+        <div class="btn-container">
+            <a class="btns btn_info" data-sk="Confirm_SMS" id="kycOtpConfirm" href="javascript:void(0);">确定</a>
+        </div>
+    </div>
 </body>
+
 </html>

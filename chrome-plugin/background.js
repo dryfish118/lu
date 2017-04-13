@@ -4,17 +4,16 @@ var WorkFlow = {
     WorkFlow_Login: 3, // 准备登录
     WorkFlow_OpenLoginPage: 4, // 打开登录页面
     WorkFlow_LoginPageOpened: 5, // 登录页面已经打开
-    WorkFlow_LoginPageClicked: 6, // 点击登录按钮
-    WorkFlow_Logined: 7, // 已登录
-    WorkFlow_AquireUser: 8, // 获取用户信息
-    WorkFlow_AquireFundDetail: 9, // 获取用户可用金额
-    WorkFlow_AquireMaxRate: 10, // 获得当前最大利率
-    WorkFlow_AquireProductList: 11, // 获取产品信息
-    WorkFlow_OpenProductPage: 12, // 打开产品页面
-    WorkFlow_InjectProduct: 13, // 产品
-    WorkFlow_InjectTrade: 14, // 交易
-    WorkFlow_InjectContract: 15, // 支付确认
-    WorkFlow_InjectSecurity: 16, // 支付确认
+    WorkFlow_Logined: 6, // 已登录
+    WorkFlow_AquireUser: 7, // 获取用户信息
+    WorkFlow_AquireFundDetail: 8, // 获取用户可用金额
+    WorkFlow_AquireMaxRate: 9, // 获得当前最大利率
+    WorkFlow_AquireProductList: 10, // 获取产品信息
+    WorkFlow_OpenProductPage: 11, // 打开产品页面
+    WorkFlow_InjectProduct: 12, // 产品
+    WorkFlow_InjectTrade: 13, // 交易
+    WorkFlow_InjectContract: 14, // 支付确认
+    WorkFlow_InjectSecurity: 15, // 支付确认
     WorkFlow_Agree: 11,
     WorkFlow_Password: 12,
     WorkFlow_Finish: 13,
@@ -45,6 +44,14 @@ function isUrlMatch(url1, url2) {
     url1 = url1.toLocaleLowerCase();
     url2 = url2.substr(0, url1.length).toLocaleLowerCase();
     return (url1 === url2);
+}
+
+function getTelephone() {
+    if (localStorage.telephone === undefined) {
+        return "";
+    } else {
+        return localStorage.telephone;
+    }
 }
 
 function getUserName() {
@@ -121,7 +128,9 @@ function getStepRate() {
 
 chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
     if (request.message === "get") {
-        if (request.object === "username") {
+        if (request.object === "telephone") {
+            sendResponse(getTelephone());
+        } else if (request.object === "username") {
             sendResponse(getUserName());
         } else if (request.object === "userpass") {
             sendResponse(getUserPass());
@@ -143,10 +152,7 @@ chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
     } else if (request.message === "set") {
         localStorage[request.object] = request.value;
     } else if (request.message === "click") {
-        if (request.object === "login") {
-            g_workFlow = WorkFlow.WorkFlow_LoginPageClicked;
-            console.log("WorkFlow_LoginPageClicked");
-        } else if (request.object === "product" ||
+        if (request.object === "product" ||
             request.object === "trade" ||
             request.object === "contract" ||
             request.object === "security") {
@@ -164,11 +170,10 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
         switch (g_workFlow) {
             case WorkFlow.WorkFlow_OpenLoginPage:
                 {
-                    doLogin();
+                    injectLogin();
                     break;
                 }
             case WorkFlow.WorkFlow_LoginPageOpened:
-            case WorkFlow.WorkFlow_LoginPageClicked:
                 {
                     startWork();
                     break;
@@ -207,7 +212,7 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
         isUrlMatch(url_login, details.url)) {
         console.log("onCompleted %s", details.url);
         console.log("failed to login, try again.");
-        doLogin();
+        injectLogin();
     }
 });
 
@@ -306,14 +311,12 @@ function aquireProductList(minMoney) {
         return;
     }
 
+    if (minMoney < getMinMoney()) {
+        minMoney = getMinMoney();
+    }
+
     g_workFlow = WorkFlow.WorkFlow_AquireProductList;
     console.log("WorkFlow_AquireProductList (%f%% %f %f)", g_rate, minMoney, g_money);
-
-    if (g_money - minMoney > getMinMoney() || minMoney < getMinMoney()) {
-        console.log("poor man, refresh & restart after 5s.");
-        setTimeout(_aquireProductList(g_money - getStepMoney()), getRefresh());
-        return;
-    }
 
     var strData = "currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false&minMoney=" + minMoney + "&maxMoney=" + g_money;
     $.ajax({
@@ -335,8 +338,6 @@ function aquireProductList(minMoney) {
             }
             var products = [];
             productList.each(function() {
-                console.log("product information");
-
                 var product = LuProduct.createProduct();
 
                 var status = $(this).find(".product-status").get(0);
@@ -381,10 +382,8 @@ function aquireProductList(minMoney) {
                 }
                 product.amount = parseFloat($(amount).text().replace(",", ""));
 
-                console.log("\tname:\t%s", product.name);
-                console.log("\turl:\t%s", product.url);
-                console.log("\trate:\t%f%%", product.rate);
-                console.log("\tamount:\t%f", product.amount);
+                console.log("product information: {name: %s, url: %s, rate: %f%%, amount:%f}",
+                    product.name, product.url, product.rate, product.amount);
 
                 var i = 0;
                 for (; i < products.length; i++) {
@@ -537,7 +536,22 @@ function aquireUserInfo(data) {
     aquireFundDetail();
 }
 
-function doLogin() {
+function openLoginPage() {
+    if (g_terminate) {
+        g_terminate = false;
+        return;
+    }
+
+    g_workFlow = WorkFlow.WorkFlow_OpenLoginPage;
+    console.log("WorkFlow_OpenLoginPage");
+
+    console.log("current url is '%s'", g_tab.url);
+    console.log("open the login page in the current tab %d", g_tab.id);
+    url_monitor = url_login;
+    chrome.tabs.update({ openerTabId: g_tab.id, url: url_login });
+}
+
+function injectLogin() {
     if (g_terminate) {
         g_terminate = false;
         return;
@@ -546,14 +560,8 @@ function doLogin() {
     g_workFlow = WorkFlow.WorkFlow_Login;
     console.log("WorkFlow_Login");
 
-    console.log("current url is '%s'", g_tab.url);
     if (!isUrlMatch(url_login, g_tab.url)) {
-        console.log("open the login page in the current tab %d", g_tab.id);
-        url_monitor = url_login;
-        chrome.tabs.update({ openerTabId: g_tab.id, url: url_login }, function() {
-            g_workFlow = WorkFlow.WorkFlow_OpenLoginPage;
-            console.log("WorkFlow_OpenLoginPage");
-        });
+        openLoginPage();
         return;
     }
 
@@ -582,7 +590,7 @@ function startWork() {
         dataType: "json",
         success: function(data) {
             if (data.uid === undefined) {
-                doLogin();
+                injectLogin();
             } else {
                 g_workFlow = WorkFlow.WorkFlow_Logined;
                 console.log("WorkFlow_Logined");

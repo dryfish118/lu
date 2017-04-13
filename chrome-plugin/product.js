@@ -3,10 +3,12 @@ chrome.runtime.onMessage.addListener(
         if (request.message === "product") {
             var a = $("a[data-sk=lijitouzi]");
             if (a.html() !== "") {
-                $("body").delegate(".blockPage", "focus", function() {
-                    chrome.runtime.sendMessage({ message: "click", object: "product", result: "No" });
-                    return;
+                $("body").bind("DOMNodeInserted", function() {
+                    if ($(".blockPage") !== undefined) {
+                        chrome.runtime.sendMessage({ message: "click", object: "product", result: "No" });
+                    }
                 });
+
                 var lijitouzi = a.first();
                 $(lijitouzi).html("<span id='lijitouzi'>" + $(lijitouzi).html() + "</span>");
                 $("#lijitouzi").trigger("click");
