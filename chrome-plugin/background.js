@@ -1,22 +1,19 @@
 var WorkFlow = {
     WorkFlow_Idle: 1, // 空闲状态
     WorkFlow_Start: 2, // 开始投资
-    WorkFlow_Login: 3, // 准备登录
-    WorkFlow_OpenLoginPage: 4, // 打开登录页面
-    WorkFlow_LoginPageOpened: 5, // 登录页面已经打开
-    WorkFlow_Logined: 6, // 已登录
-    WorkFlow_AquireUser: 7, // 获取用户信息
-    WorkFlow_AquireFundDetail: 8, // 获取用户可用金额
-    WorkFlow_AquireMaxRate: 9, // 获得当前最大利率
-    WorkFlow_AquireProductList: 10, // 获取产品信息
-    WorkFlow_OpenProductPage: 11, // 打开产品页面
-    WorkFlow_InjectProduct: 12, // 产品
-    WorkFlow_InjectTrade: 13, // 交易
-    WorkFlow_InjectContract: 14, // 支付确认
-    WorkFlow_InjectSecurity: 15, // 支付确认
-    WorkFlow_Agree: 11,
-    WorkFlow_Password: 12,
-    WorkFlow_Finish: 13,
+    WorkFlow_OpenLoginPage: 3, // 打开登录页面
+    WorkFlow_Login: 4, // 登录
+    WorkFlow_OpenFundDetailPage: 5, // 打开基金页面
+    WorkFlow_InjectFunddetail: 6, // 基金
+    WorkFlow_AcquireFundDetail: 7, // 获取用户可用金额
+    WorkFlow_AcquireMaxRate: 8, // 获得当前最大利率
+    WorkFlow_AcquireProductList: 9, // 获取产品信息
+    WorkFlow_OpenProductPage: 10, // 打开产品页面
+    WorkFlow_InjectProduct: 11, // 产品
+    WorkFlow_InjectTrade: 12, // 交易
+    WorkFlow_InjectContract: 13, // 支付确认
+    WorkFlow_InjectSecurity: 14, // 支付确认
+    WorkFlow_Agree: 15,
 };
 
 var g_workFlow = WorkFlow.WorkFlow_Idle;
@@ -33,7 +30,7 @@ var url_monitor;
 var url_login = "https://user.lu.com/user/login";
 var url_userinfo = "https://user.lu.com/user/service/user/current-user-info-for-homepage";
 var url_account = "https://my.lu.com/my/account";
-var url_fund = "https://my.lu.com/my/yeb/fund-detail";
+var url_funddetail = "https://my.lu.com/my/yeb/fund-detail";
 var url_r030 = "https://list.lu.com/list/r030";
 var url_list = "https://list.lu.com";
 var url_trade = "https://trading.lu.com/trading/trade-info";
@@ -41,9 +38,12 @@ var url_contract = "https://trading.lu.com/trading/contract-info";
 var url_security = "https://trading.lu.com/trading/security-valid";
 
 function isUrlMatch(url1, url2) {
-    url1 = url1.toLocaleLowerCase();
-    url2 = url2.substr(0, url1.length).toLocaleLowerCase();
-    return (url1 === url2);
+    if (url1 !== undefined && url2 !== undefined) {
+        url1 = url1.toLowerCase();
+        url2 = url2.substr(0, url1.length).toLowerCase();
+        return (url1 === url2);
+    }
+    return false;
 }
 
 function getTelephone() {
@@ -151,16 +151,20 @@ chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
         }
     } else if (request.message === "set") {
         localStorage[request.object] = request.value;
-    } else if (request.message === "click") {
-        if (request.object === "product" ||
+    } else if (request.message === "inject") {
+        if (request.object === "funddetail") {
+            parseAvailableMoney(request.result, request.money);
+        } else if (request.object === "product" ||
             request.object === "trade" ||
             request.object === "contract" ||
             request.object === "security") {
             if (request.result === "No") {
                 console.log("the product is sold, refresh & restart after 5s.");
-                setTimeout(_aquireProductList(g_money - getStepMoney()), getRefresh());
+                setTimeout(_acquireProductList(g_money - getStepMoney()), getRefresh());
             }
         }
+    } else if (request.message === "log") {
+        console.log(request.object);
     }
 });
 
@@ -173,9 +177,14 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
                     injectLogin();
                     break;
                 }
-            case WorkFlow.WorkFlow_LoginPageOpened:
+            case WorkFlow.WorkFlow_Login:
                 {
                     startWork();
+                    break;
+                }
+            case WorkFlow.WorkFlow_OpenFundDetailPage:
+                {
+                    injectFunddetail();
                     break;
                 }
             case WorkFlow.WorkFlow_OpenProductPage:
@@ -207,10 +216,7 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
                     break;
                 }
         }
-    } else if ((g_workFlow === WorkFlow.WorkFlow_LoginPageOpened ||
-            g_workFlow === WorkFlow.WorkFlow_LoginPageOpened) &&
-        isUrlMatch(url_login, details.url)) {
-        console.log("onCompleted %s", details.url);
+    } else if (g_workFlow === WorkFlow.WorkFlow_Login && isUrlMatch(url_login, details.url)) {
         console.log("failed to login, try again.");
         injectLogin();
     }
@@ -299,13 +305,13 @@ var LuProduct = {
     }
 };
 
-function _aquireProductList(minMoney) {
+function _acquireProductList(minMoney) {
     return function() {
-        aquireProductList(minMoney);
+        acquireProductList(minMoney);
     };
 }
 
-function aquireProductList(minMoney) {
+function acquireProductList(minMoney) {
     if (g_terminate) {
         g_terminate = false;
         return;
@@ -315,8 +321,8 @@ function aquireProductList(minMoney) {
         minMoney = getMinMoney();
     }
 
-    g_workFlow = WorkFlow.WorkFlow_AquireProductList;
-    console.log("WorkFlow_AquireProductList (%f%% %f %f)", g_rate, minMoney, g_money);
+    g_workFlow = WorkFlow.WorkFlow_AcquireProductList;
+    console.log("WorkFlow_AcquireProductList (%f%% %f %f)", g_rate, minMoney, g_money);
 
     var strData = "currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false&minMoney=" + minMoney + "&maxMoney=" + g_money;
     $.ajax({
@@ -327,13 +333,13 @@ function aquireProductList(minMoney) {
             var doc = $(data);
             var productList = doc.find(".product-list");
             if (productList === undefined) {
-                console.log("failed to aquire the product list, refresh & restart after 5s.");
-                setTimeout(_aquireProductList(g_money - getStepMoney()), getRefresh());
+                console.log("failed to acquire the product list, refresh & restart after 5s.");
+                setTimeout(_acquireProductList(g_money - getStepMoney()), getRefresh());
                 return;
             }
             if (productList.length === 0) {
-                console.log("failed to aquire the product list between from %d to %d", minMoney, g_money);
-                aquireProductList(minMoney - getStepMoney());
+                console.log("failed to acquire the product list between from %d to %d", minMoney, g_money);
+                acquireProductList(minMoney - getStepMoney());
                 return;
             }
             var products = [];
@@ -342,7 +348,7 @@ function aquireProductList(minMoney) {
 
                 var status = $(this).find(".product-status").get(0);
                 if (status === undefined) {
-                    console.log("failed to aquire the product status.");
+                    console.log("failed to acquire the product status.");
                     return true;
                 }
                 var a = $(status).find("a");
@@ -353,7 +359,7 @@ function aquireProductList(minMoney) {
 
                 var rate = $(this).find(".interest-rate .num-style").get(0);
                 if (rate === undefined) {
-                    console.log("failed to aquire the product rate.");
+                    console.log("failed to acquire the product rate.");
                     return true;
                 }
                 product.rate = parseFloat($(rate).text());
@@ -364,20 +370,20 @@ function aquireProductList(minMoney) {
 
                 var name = $(this).find(".product-name").get(0);
                 if (name === undefined) {
-                    console.log("failed to aquire the product name.");
+                    console.log("failed to acquire the product name.");
                     return true;
                 }
                 a = $(name).find("a");
                 product.name = $(a).text();
                 product.url = $(a).attr("href");
                 if (product.url === undefined || product.url.length === 0) {
-                    console.log("failed to aquire the product url.");
+                    console.log("failed to acquire the product url.");
                     return true;
                 }
 
                 var amount = $(this).find(".product-amount .num-style").get(0);
                 if (amount === undefined) {
-                    console.log("failed to aquire the product amount");
+                    console.log("failed to acquire the product amount");
                     return true;
                 }
                 product.amount = parseFloat($(amount).text().replace(",", ""));
@@ -400,8 +406,8 @@ function aquireProductList(minMoney) {
             });
 
             if (products.length === 0) {
-                console.log("failed to aquire any matched product, refresh & restart after 5s.");
-                setTimeout(_aquireProductList(g_money - getStepMoney()), getRefresh());
+                console.log("failed to acquire any matched product, refresh & restart after 5s.");
+                setTimeout(_acquireProductList(g_money - getStepMoney()), getRefresh());
                 return;
             }
 
@@ -412,21 +418,21 @@ function aquireProductList(minMoney) {
             chrome.tabs.update({ openerTabId: g_tab.id, url: url_monitor });
         },
         error: function() {
-            console.log("failed to aquire the product list.");
+            console.log("failed to acquire the product list.");
             g_workFlow = WorkFlow.WorkFlow_Idle;
             console.log("WorkFlow_Idle");
         }
     });
 }
 
-function aquireMaxRate() {
+function acquireMaxRate() {
     if (g_terminate) {
         g_terminate = false;
         return;
     }
 
-    g_workFlow = WorkFlow.WorkFlow_AquireMaxRate;
-    console.log("WorkFlow_AquireMaxRate");
+    g_workFlow = WorkFlow.WorkFlow_AcquireMaxRate;
+    console.log("WorkFlow_AcquireMaxRate");
 
     var strData = "currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false";
     $.ajax({
@@ -436,14 +442,14 @@ function aquireMaxRate() {
         success: function(doc) {
             var product = $(doc).find(".product-list").get(0);
             if (product === undefined) {
-                console.log("failed to aquire the product information.");
+                console.log("failed to acquire the product information.");
                 g_workFlow = WorkFlow.WorkFlow_Idle;
                 console.log("WorkFlow_Idle");
                 return;
             }
             var rate = $(product).find(".interest-rate .num-style").get(0);
             if (rate === undefined) {
-                console.log("failed to aquire the max rate.");
+                console.log("failed to acquire the max rate.");
                 g_workFlow = WorkFlow.WorkFlow_Idle;
                 console.log("WorkFlow_Idle");
                 return;
@@ -459,96 +465,63 @@ function aquireMaxRate() {
                 return;
             }
 
-            aquireProductList(g_money - getStepMoney());
+            acquireProductList(g_money - getStepMoney());
         },
         error: function() {
-            console.log("failed to aquire the product list.");
+            console.log("failed to acquire the product list.");
             g_workFlow = WorkFlow.WorkFlow_Idle;
             console.log("WorkFlow_Idle");
         }
     });
 }
 
-function aquireFundDetail() {
+function parseAvailableMoney(r, m) {
     if (g_terminate) {
         g_terminate = false;
         return;
     }
 
-    g_workFlow = WorkFlow.WorkFlow_AquireFundDetail;
-    console.log("WorkFlow_AquireFundDetail");
+    g_workFlow = WorkFlow.WorkFlow_AcquireFundDetail;
+    console.log("WorkFlow_AcquireFundDetail");
 
-    $.ajax({
-        url: url_fund,
-        dataType: "html",
-        success: function(data) {
-            var doc = $(data);
-            var amount = doc.find(".available-balance-wrap > .balance-amount").get(0);
-            if (amount === undefined) {
-                console.log("failed to aquire the available amount");
-                g_workFlow = WorkFlow.WorkFlow_Idle;
-                console.log("WorkFlow_Idle");
-                return;
-            }
-            var availableMoney = parseFloat($(amount).text().replace(",", ""));
-            console.log("available money:\t%f", availableMoney);
+    if (r === "No") {
+        console.log("failed to acquire the available amount");
+        g_workFlow = WorkFlow.WorkFlow_Idle;
+        console.log("WorkFlow_Idle");
+    } else {
+        console.log("available money:\t%f", m);
 
-            var maxMoney = getMaxMoney();
-            if (maxMoney !== 0 && maxMoney < availableMoney) {
-                console.log("use the max money:\t%f", maxMoney);
-                availableMoney = maxMoney;
-            }
+        var maxMoney = getMaxMoney();
+        if (maxMoney !== 0 && maxMoney < m) {
+            console.log("use the max money:\t%f", maxMoney);
+            m = maxMoney;
+        }
 
-            g_money = parseInt(availableMoney);
-            if (g_money < getMinMoney()) {
-                console.log("poor man, go to bed and have a good dream.");
-                g_workFlow = WorkFlow.WorkFlow_Idle;
-                console.log("WorkFlow_Idle");
-                return;
-            }
-
-            aquireMaxRate();
-        },
-        error: function() {
-            console.log("failed to aquire the fund detail");
+        g_money = parseInt(m);
+        if (g_money < getMinMoney()) {
+            console.log("poor man, go to bed and have a good dream.");
             g_workFlow = WorkFlow.WorkFlow_Idle;
             console.log("WorkFlow_Idle");
+        } else {
+            //acquireMaxRate();
         }
+    }
+}
+
+function injectFunddetail() {
+    if (g_terminate) {
+        g_terminate = false;
+        return;
+    }
+
+    g_workFlow = WorkFlow.WorkFlow_InjectFunddetail;
+    console.log("WorkFlow_InjectFunddetail");
+
+    chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
+        chrome.tabs.executeScript(g_tab.id, { file: "funddetail.js" }, function() {
+            chrome.tabs.sendMessage(g_tab.id, { message: "funddetail" });
+        });
     });
-}
-
-function aquireUserInfo(data) {
-    if (g_terminate) {
-        g_terminate = false;
-        return;
-    }
-
-    g_workFlow = WorkFlow.WorkFlow_AquireUser;
-    console.log("WorkFlow_AquireUser");
-
-    g_uid = data.uid;
-    g_userName = data.userName;
-    g_mobileNo = data.mobileNo;
-    console.log("user id:\t%d", g_uid);
-    console.log("user name:\t%s", g_userName);
-    console.log("mobile:\t%s", g_mobileNo);
-
-    aquireFundDetail();
-}
-
-function openLoginPage() {
-    if (g_terminate) {
-        g_terminate = false;
-        return;
-    }
-
-    g_workFlow = WorkFlow.WorkFlow_OpenLoginPage;
-    console.log("WorkFlow_OpenLoginPage");
-
-    console.log("current url is '%s'", g_tab.url);
-    console.log("open the login page in the current tab %d", g_tab.id);
-    url_monitor = url_login;
-    chrome.tabs.update({ openerTabId: g_tab.id, url: url_login });
 }
 
 function injectLogin() {
@@ -557,22 +530,25 @@ function injectLogin() {
         return;
     }
 
-    g_workFlow = WorkFlow.WorkFlow_Login;
-    console.log("WorkFlow_Login");
+    chrome.tabs.query({ windowId: g_tab.windowId, index: g_tab.index }, function(tabs) {
+        console.log("current url: %s", tabs[0].url);
+        if (!isUrlMatch(url_login, tabs[0].url)) {
+            g_workFlow = WorkFlow.WorkFlow_OpenLoginPage;
+            console.log("WorkFlow_OpenLoginPage");
 
-    if (!isUrlMatch(url_login, g_tab.url)) {
-        openLoginPage();
-        return;
-    }
+            url_monitor = url_login;
+            chrome.tabs.update({ openerTabId: g_tab.id, url: url_monitor });
+        } else {
+            g_workFlow = WorkFlow.WorkFlow_Login;
+            console.log("WorkFlow_Login");
 
-    g_workFlow = WorkFlow.WorkFlow_LoginPageOpened;
-    console.log("WorkFlow_LoginPageOpened");
-    url_monitor = url_account;
-    chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
-        chrome.tabs.executeScript(g_tab.id, { file: "login.js" }, function() {
-            console.log("login.js injected.");
-            chrome.tabs.sendMessage(g_tab.id, { message: "login" });
-        });
+            url_monitor = url_account;
+            chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
+                chrome.tabs.executeScript(g_tab.id, { file: "login.js" }, function() {
+                    chrome.tabs.sendMessage(g_tab.id, { message: "login" });
+                });
+            });
+        }
     });
 }
 
@@ -592,13 +568,21 @@ function startWork() {
             if (data.uid === undefined) {
                 injectLogin();
             } else {
-                g_workFlow = WorkFlow.WorkFlow_Logined;
-                console.log("WorkFlow_Logined");
-                aquireUserInfo(data);
+                g_uid = data.uid;
+                g_userName = data.userName;
+                g_mobileNo = data.mobileNo;
+                console.log("user id:\t%d", g_uid);
+                console.log("user name:\t%s", g_userName);
+                console.log("mobile:\t%s", g_mobileNo);
+
+                g_workFlow = WorkFlow.WorkFlow_OpenFundDetailPage;
+                console.log("WorkFlow_OpenFundDetailPage");
+                url_monitor = url_funddetail;
+                chrome.tabs.update({ openerTabId: g_tab.id, url: url_monitor });
             }
         },
         error: function() {
-            console.log("failed to aquire the user information.");
+            console.log("failed to acquire the user information.");
             g_workFlow = WorkFlow.WorkFlow_Idle;
             console.log("WorkFlow_Idle");
         }
@@ -607,11 +591,11 @@ function startWork() {
 
 chrome.browserAction.onClicked.addListener(function() {
     if (g_workFlow !== WorkFlow.WorkFlow_Idle && !g_terminate) {
+        g_terminate = true;
         console.log("terminated!");
+
         g_workFlow = WorkFlow.WorkFlow_Idle;
         console.log("WorkFlow_Idle");
-
-        g_terminate = true;
     } else {
         chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
             if (tabs === undefined) {
