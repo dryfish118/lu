@@ -2,18 +2,23 @@ var WorkFlow = {
     WorkFlow_Idle: 1, // 空闲状态
     WorkFlow_Start: 2, // 开始投资
     WorkFlow_OpenLoginPage: 3, // 打开登录页面
-    WorkFlow_Login: 4, // 登录
-    WorkFlow_OpenFundDetailPage: 5, // 打开基金页面
-    WorkFlow_InjectFunddetail: 6, // 基金
-    WorkFlow_AcquireFundDetail: 7, // 获取用户可用金额
-    WorkFlow_AcquireMaxRate: 8, // 获得当前最大利率
-    WorkFlow_AcquireProductList: 9, // 获取产品信息
-    WorkFlow_OpenProductPage: 10, // 打开产品页面
-    WorkFlow_InjectProduct: 11, // 产品
-    WorkFlow_InjectTrade: 12, // 交易
-    WorkFlow_InjectContract: 13, // 支付确认
-    WorkFlow_InjectSecurity: 14, // 支付确认
-    WorkFlow_Agree: 15,
+    WorkFlow_InjectLogin: 4, // 嵌入登录代码
+    WorkFlow_AcquireUserInfo: 5, // 获取用户信息
+    WorkFlow_OpenFundDetailPage: 6, // 打开基金页面
+    WorkFlow_InjectFunddetail: 7, // 嵌入基金代码
+    WorkFlow_AcquireFundDetail: 8, // 获取用户可用金额
+    WorkFlow_OpenMaxRatePage: 9, // 以利率最大排序取产品列表
+    WorkFlow_InjectMaxRate: 10, // 嵌入获取利率代码
+    WorkFlow_AcquireMaxRate: 11, // 获得当前最大利率
+    WorkFlow_OpenProductListPage: 12, // 取资金内利率最大的产品列表
+    WorkFlow_InjectProductList: 13, // 嵌入产品
+    WorkFlow_AcquireProductList: 14, // 获取产品信息
+    WorkFlow_OpenProductPage: 15, // 打开产品页面
+    WorkFlow_InjectProduct: 16, // 产品
+    WorkFlow_InjectTrade: 17, // 交易
+    WorkFlow_InjectContract: 18, // 支付确认
+    WorkFlow_InjectSecurity: 19, // 支付确认
+    WorkFlow_Agree: 20,
 };
 
 var g_workFlow = WorkFlow.WorkFlow_Idle;
@@ -23,7 +28,8 @@ var g_tab;
 var g_uid;
 var g_userName;
 var g_mobileNo;
-var g_money;
+var g_fromMoney;
+var g_toMoney;
 var g_rate;
 var url_monitor;
 
@@ -127,44 +133,51 @@ function getStepRate() {
 }
 
 chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
-    if (request.message === "get") {
-        if (request.object === "telephone") {
+    var message = request.message;
+    var param1 = request.param1;
+    var param2 = request.param2;
+    if (message === "get") {
+        if (param1 === "telephone") {
             sendResponse(getTelephone());
-        } else if (request.object === "username") {
+        } else if (param1 === "username") {
             sendResponse(getUserName());
-        } else if (request.object === "userpass") {
+        } else if (param1 === "userpass") {
             sendResponse(getUserPass());
-        } else if (request.object === "tradepass") {
+        } else if (param1 === "tradepass") {
             sendResponse(getTradePass());
-        } else if (request.object === "refresh") {
+        } else if (param1 === "refresh") {
             sendResponse(getRefresh());
-        } else if (request.object === "maxmoney") {
+        } else if (param1 === "maxmoney") {
             sendResponse(getMaxMoney());
-        } else if (request.object === "minmoney") {
+        } else if (param1 === "minmoney") {
             sendResponse(getMinMoney());
-        } else if (request.object === "stepmoney") {
+        } else if (param1 === "stepmoney") {
             sendResponse(getStepMoney());
-        } else if (request.object === "minrate") {
+        } else if (param1 === "minrate") {
             sendResponse(getMinRate());
-        } else if (request.object === "steprate") {
+        } else if (param1 === "steprate") {
             sendResponse(getStepRate());
+        } else if (param1 === "validrate") {
+            sendResponse(g_rate);
         }
-    } else if (request.message === "set") {
-        localStorage[request.object] = request.value;
-    } else if (request.message === "inject") {
-        if (request.object === "funddetail") {
-            parseAvailableMoney(request.result, request.money);
-        } else if (request.object === "product" ||
-            request.object === "trade" ||
-            request.object === "contract" ||
-            request.object === "security") {
-            if (request.result === "No") {
-                console.log("the product is sold, refresh & restart after 5s.");
-                setTimeout(_acquireProductList(g_money - getStepMoney()), getRefresh());
-            }
+    } else if (message === "set") {
+        localStorage[param1] = param2;
+    } else if (message === "log") {
+        console.log(param1);
+    } else if (message === "funddetail") {
+        acquireAvailableMoney(param1, param2);
+    } else if (message === "maxrate") {
+        acquireMaxrate(param1, param2);
+    } else if (message === "productlist") {
+        acquireProductList(param1, param2);
+    } else if (message === "product" ||
+        message === "trade" ||
+        message === "contract" ||
+        message === "security") {
+        if (param1 === "No") {
+            console.log("the product is sold, refresh & restart after %d\".", getRefresh() / 1000);
+            setTimeout(openProductListPage, getRefresh());
         }
-    } else if (request.message === "log") {
-        console.log(request.object);
     }
 });
 
@@ -174,27 +187,37 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
         switch (g_workFlow) {
             case WorkFlow.WorkFlow_OpenLoginPage:
                 {
-                    injectLogin();
+                    parseLoginPage();
                     break;
                 }
-            case WorkFlow.WorkFlow_Login:
+            case WorkFlow.WorkFlow_InjectLogin:
                 {
                     startWork();
                     break;
                 }
             case WorkFlow.WorkFlow_OpenFundDetailPage:
                 {
-                    injectFunddetail();
+                    injectFunddetailPage();
+                    break;
+                }
+            case WorkFlow.WorkFlow_OpenMaxRatePage:
+                {
+                    injectMaxRatePage();
+                    break;
+                }
+            case WorkFlow.WorkFlow_OpenProductListPage:
+                {
+                    injectProductListPage();
                     break;
                 }
             case WorkFlow.WorkFlow_OpenProductPage:
                 {
-                    injectProduct();
+                    injectProductPage();
                     break;
                 }
             case WorkFlow.WorkFlow_InjectProduct:
                 {
-                    injectTrade();
+                    injectTradePage();
                     break;
                 }
             case WorkFlow.WorkFlow_InjectTrade:
@@ -216,9 +239,9 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
                     break;
                 }
         }
-    } else if (g_workFlow === WorkFlow.WorkFlow_Login && isUrlMatch(url_login, details.url)) {
+    } else if (g_workFlow === WorkFlow.WorkFlow_InjectLogin && isUrlMatch(url_login, details.url)) {
         console.log("failed to login, try again.");
-        injectLogin();
+        parseLoginPage();
     }
 });
 
@@ -258,7 +281,7 @@ function injectContract() {
     });
 }
 
-function injectTrade() {
+function injectTradePage() {
     if (g_terminate) {
         g_terminate = false;
         return;
@@ -276,7 +299,7 @@ function injectTrade() {
     });
 }
 
-function injectProduct() {
+function injectProductPage() {
     if (g_terminate) {
         g_terminate = false;
         return;
@@ -287,145 +310,70 @@ function injectProduct() {
 
     url_monitor = url_trade;
     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
-        chrome.tabs.executeScript(g_tab.id, { file: "product.js" }, function() {
-            console.log("product.js injected.");
+        chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
             chrome.tabs.sendMessage(g_tab.id, { message: "product" });
         });
     });
 }
 
-var LuProduct = {
-    createProduct: function() {
-        var product = {};
-        product.name = "";
-        product.url = "";
-        product.rate = 0;
-        product.amount = 0;
-        return product;
-    }
-};
-
-function _acquireProductList(minMoney) {
-    return function() {
-        acquireProductList(minMoney);
-    };
-}
-
-function acquireProductList(minMoney) {
+function openProductPage(url) {
     if (g_terminate) {
         g_terminate = false;
         return;
     }
 
-    if (minMoney < getMinMoney()) {
-        minMoney = getMinMoney();
+    g_workFlow = WorkFlow.WorkFlow_OpenProductPage;
+    console.log("WorkFlow_OpenProductPage %s", url);
+
+    url_monitor = url_list + url;
+    chrome.tabs.update({ openerTabId: g_tab.id, url: url_monitor });
+}
+
+function acquireProductList(result, url) {
+    if (g_terminate) {
+        g_terminate = false;
+        return;
     }
 
-    g_workFlow = WorkFlow.WorkFlow_AcquireProductList;
-    console.log("WorkFlow_AcquireProductList (%f%% %f %f)", g_rate, minMoney, g_money);
+    if (result == "No") {
+        console.log("failed to acquire the productlist, refresh & restart after %d\".", getRefresh() / 1000);
+        setTimeout(openProductListPage, getRefresh());
+    } else {
+        openProductPage(url);
+    }
+}
 
-    var strData = "currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false&minMoney=" + minMoney + "&maxMoney=" + g_money;
-    $.ajax({
-        url: url_r030,
-        dataType: "html",
-        data: strData,
-        success: function(data) {
-            var doc = $(data);
-            var productList = doc.find(".product-list");
-            if (productList === undefined) {
-                console.log("failed to acquire the product list, refresh & restart after 5s.");
-                setTimeout(_acquireProductList(g_money - getStepMoney()), getRefresh());
-                return;
-            }
-            if (productList.length === 0) {
-                console.log("failed to acquire the product list between from %d to %d", minMoney, g_money);
-                acquireProductList(minMoney - getStepMoney());
-                return;
-            }
-            var products = [];
-            productList.each(function() {
-                var product = LuProduct.createProduct();
+function injectProductListPage() {
+    if (g_terminate) {
+        g_terminate = false;
+        return;
+    }
 
-                var status = $(this).find(".product-status").get(0);
-                if (status === undefined) {
-                    console.log("failed to acquire the product status.");
-                    return true;
-                }
-                var a = $(status).find("a");
-                if ($(a).attr("data-sk") !== "invest_list") {
-                    console.log("the product is sold.");
-                    return true;
-                }
+    g_workFlow = WorkFlow.WorkFlow_InjectProductList;
+    console.log("WorkFlow_InjectProductList");
 
-                var rate = $(this).find(".interest-rate .num-style").get(0);
-                if (rate === undefined) {
-                    console.log("failed to acquire the product rate.");
-                    return true;
-                }
-                product.rate = parseFloat($(rate).text());
-                if (g_rate - product.rate > getStepRate()) {
-                    console.log("the product rate %f is lower than the min rate.", product.rate);
-                    return false;
-                }
-
-                var name = $(this).find(".product-name").get(0);
-                if (name === undefined) {
-                    console.log("failed to acquire the product name.");
-                    return true;
-                }
-                a = $(name).find("a");
-                product.name = $(a).text();
-                product.url = $(a).attr("href");
-                if (product.url === undefined || product.url.length === 0) {
-                    console.log("failed to acquire the product url.");
-                    return true;
-                }
-
-                var amount = $(this).find(".product-amount .num-style").get(0);
-                if (amount === undefined) {
-                    console.log("failed to acquire the product amount");
-                    return true;
-                }
-                product.amount = parseFloat($(amount).text().replace(",", ""));
-
-                console.log("product information: {name: %s, url: %s, rate: %f%%, amount:%f}",
-                    product.name, product.url, product.rate, product.amount);
-
-                var i = 0;
-                for (; i < products.length; i++) {
-                    if (product.rate * product.amount > products[i].rate * products[i].amount) {
-                        products.splice(i, 0, product);
-                        break;
-                    }
-                }
-                if (i === products.length) {
-                    products.push(product);
-                }
-
-                return true;
-            });
-
-            if (products.length === 0) {
-                console.log("failed to acquire any matched product, refresh & restart after 5s.");
-                setTimeout(_acquireProductList(g_money - getStepMoney()), getRefresh());
-                return;
-            }
-
-
-            g_workFlow = WorkFlow.WorkFlow_OpenProductPage;
-            console.log("WorkFlow_OpenProductPage %s", products[0].url);
-            url_monitor = url_list + products[0].url;
-            chrome.tabs.update({ openerTabId: g_tab.id, url: url_monitor });
-        },
-        error: function() {
-            console.log("failed to acquire the product list.");
-            g_workFlow = WorkFlow.WorkFlow_Idle;
-            console.log("WorkFlow_Idle");
-        }
+    chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
+        chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
+            chrome.tabs.sendMessage(g_tab.id, { message: "productlist" });
+        });
     });
 }
 
-function acquireMaxRate() {
+function openProductListPage() {
+    if (g_terminate) {
+        g_terminate = false;
+        return;
+    }
+
+    g_workFlow = WorkFlow.WorkFlow_OpenProductListPage;
+    console.log("WorkFlow_OpenProductListPage (%f%% %d %d)", g_rate, g_fromMoney, g_toMoney);
+
+    url_monitor = url_r030;
+    var strData = "?currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false&minMoney=" + g_fromMoney + "&maxMoney=" + g_toMoney;
+    chrome.tabs.update({ openerTabId: g_tab.id, url: url_monitor + strData });
+}
+
+function acquireMaxrate(result, rate) {
     if (g_terminate) {
         g_terminate = false;
         return;
@@ -434,48 +382,46 @@ function acquireMaxRate() {
     g_workFlow = WorkFlow.WorkFlow_AcquireMaxRate;
     console.log("WorkFlow_AcquireMaxRate");
 
-    var strData = "currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false";
-    $.ajax({
-        url: url_r030,
-        dataType: "html",
-        data: strData,
-        success: function(doc) {
-            var product = $(doc).find(".product-list").get(0);
-            if (product === undefined) {
-                console.log("failed to acquire the product information.");
-                g_workFlow = WorkFlow.WorkFlow_Idle;
-                console.log("WorkFlow_Idle");
-                return;
-            }
-            var rate = $(product).find(".interest-rate .num-style").get(0);
-            if (rate === undefined) {
-                console.log("failed to acquire the max rate.");
-                g_workFlow = WorkFlow.WorkFlow_Idle;
-                console.log("WorkFlow_Idle");
-                return;
-            }
-            g_rate = parseFloat($(rate).text());
-            console.log("max rate:\t%f", g_rate);
-
-            var minRate = getMinRate();
-            if (minRate !== 0 && g_rate < minRate + getStepRate()) {
-                console.log("current max rate is lower than the min rate %f", minRate);
-                g_workFlow = WorkFlow.WorkFlow_Idle;
-                console.log("WorkFlow_Idle");
-                return;
-            }
-
-            acquireProductList(g_money - getStepMoney());
-        },
-        error: function() {
-            console.log("failed to acquire the product list.");
+    if (result === "No") {
+        console.log("failed to acquire the max rate.");
+        g_workFlow = WorkFlow.WorkFlow_Idle;
+        console.log("WorkFlow_Idle");
+    } else {
+        var minRate = getMinRate();
+        var stepRate = getStepRate();
+        if (minRate !== 0 && rate < minRate) {
+            console.log("current max rate(%f) is lower than the min rate(%f)", rate, minRate);
             g_workFlow = WorkFlow.WorkFlow_Idle;
             console.log("WorkFlow_Idle");
+        } else {
+            g_rate = rate - stepRate;
+            if (minRate !== 0 && g_rate < minRate) {
+                g_rate = minRate;
+            }
+            console.log("valid rate:\t%f", g_rate);
+
+            openProductListPage();
         }
+    }
+}
+
+function injectMaxRatePage() {
+    if (g_terminate) {
+        g_terminate = false;
+        return;
+    }
+
+    g_workFlow = WorkFlow.WorkFlow_InjectMaxRate;
+    console.log("WorkFlow_InjectMaxRate");
+
+    chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
+        chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
+            chrome.tabs.sendMessage(g_tab.id, { message: "maxrate" });
+        });
     });
 }
 
-function parseAvailableMoney(r, m) {
+function acquireAvailableMoney(result, money) {
     if (g_terminate) {
         g_terminate = false;
         return;
@@ -484,31 +430,42 @@ function parseAvailableMoney(r, m) {
     g_workFlow = WorkFlow.WorkFlow_AcquireFundDetail;
     console.log("WorkFlow_AcquireFundDetail");
 
-    if (r === "No") {
+    if (result === "No") {
         console.log("failed to acquire the available amount");
         g_workFlow = WorkFlow.WorkFlow_Idle;
         console.log("WorkFlow_Idle");
     } else {
-        console.log("available money:\t%f", m);
+        console.log("available money:\t%f", money);
 
-        var maxMoney = getMaxMoney();
-        if (maxMoney !== 0 && maxMoney < m) {
-            console.log("use the max money:\t%f", maxMoney);
-            m = maxMoney;
+        var toMoney = getMaxMoney();
+        if (toMoney !== 0 && toMoney < money) {
+            console.log("use the max money:\t%f", toMoney);
+            money = toMoney;
         }
 
-        g_money = parseInt(m);
-        if (g_money < getMinMoney()) {
-            console.log("poor man, go to bed and have a good dream.");
-            g_workFlow = WorkFlow.WorkFlow_Idle;
-            console.log("WorkFlow_Idle");
+        g_toMoney = parseInt(money);
+
+        g_fromMoney = getMinMoney();
+        if (g_fromMoney !== 0) {
+            if (g_fromMoney > g_toMoney) {
+                console.log("poor man, go to bed and have a good dream.");
+                g_workFlow = WorkFlow.WorkFlow_Idle;
+                console.log("WorkFlow_Idle");
+                return;
+            }
         } else {
-            //acquireMaxRate();
+            g_fromMoney = g_toMoney - getStepMoney();
         }
+
+        g_workFlow = WorkFlow.WorkFlow_OpenMaxRatePage;
+        console.log("WorkFlow_OpenMaxRatePage");
+        url_monitor = url_r030;
+        var strUrl = url_r030 + "?currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false";
+        chrome.tabs.update({ openerTabId: g_tab.id, url: strUrl });
     }
 }
 
-function injectFunddetail() {
+function injectFunddetailPage() {
     if (g_terminate) {
         g_terminate = false;
         return;
@@ -518,13 +475,13 @@ function injectFunddetail() {
     console.log("WorkFlow_InjectFunddetail");
 
     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
-        chrome.tabs.executeScript(g_tab.id, { file: "funddetail.js" }, function() {
+        chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
             chrome.tabs.sendMessage(g_tab.id, { message: "funddetail" });
         });
     });
 }
 
-function injectLogin() {
+function parseLoginPage() {
     if (g_terminate) {
         g_terminate = false;
         return;
@@ -539,12 +496,12 @@ function injectLogin() {
             url_monitor = url_login;
             chrome.tabs.update({ openerTabId: g_tab.id, url: url_monitor });
         } else {
-            g_workFlow = WorkFlow.WorkFlow_Login;
-            console.log("WorkFlow_Login");
+            g_workFlow = WorkFlow.WorkFlow_InjectLogin;
+            console.log("WorkFlow_InjectLogin");
 
             url_monitor = url_account;
             chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
-                chrome.tabs.executeScript(g_tab.id, { file: "login.js" }, function() {
+                chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
                     chrome.tabs.sendMessage(g_tab.id, { message: "login" });
                 });
             });
@@ -566,8 +523,11 @@ function startWork() {
         dataType: "json",
         success: function(data) {
             if (data.uid === undefined) {
-                injectLogin();
+                parseLoginPage();
             } else {
+                g_workFlow = WorkFlow.WorkFlow_AcquireUserInfo;
+                console.log("WorkFlow_AcquireUserInfo");
+
                 g_uid = data.uid;
                 g_userName = data.userName;
                 g_mobileNo = data.mobileNo;

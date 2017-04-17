@@ -4,25 +4,25 @@ loadConfig();
 function loadConfig() {
     console.log("load config");
 
-    chrome.runtime.sendMessage({ message: "get", object: "telephone" }, function(response) {
+    chrome.runtime.sendMessage({ message: "get", param1: "telephone" }, function(response) {
         $("#telephone").val(response);
-        chrome.runtime.sendMessage({ message: "get", object: "username" }, function(response) {
+        chrome.runtime.sendMessage({ message: "get", param1: "username" }, function(response) {
             $("#username").val(response);
-            chrome.runtime.sendMessage({ message: "get", object: "userpass" }, function(response) {
+            chrome.runtime.sendMessage({ message: "get", param1: "userpass" }, function(response) {
                 $("#userpass").val(response);
-                chrome.runtime.sendMessage({ message: "get", object: "tradepass" }, function(response) {
+                chrome.runtime.sendMessage({ message: "get", param1: "tradepass" }, function(response) {
                     $("#tradepass").val(response);
-                    chrome.runtime.sendMessage({ message: "get", object: "refresh" }, function(response) {
+                    chrome.runtime.sendMessage({ message: "get", param1: "refresh" }, function(response) {
                         $("#refresh").val(response);
-                        chrome.runtime.sendMessage({ message: "get", object: "maxmoney" }, function(response) {
+                        chrome.runtime.sendMessage({ message: "get", param1: "maxmoney" }, function(response) {
                             $("#maxmoney").val(response);
-                            chrome.runtime.sendMessage({ message: "get", object: "minmoney" }, function(response) {
+                            chrome.runtime.sendMessage({ message: "get", param1: "minmoney" }, function(response) {
                                 $("#minmoney").val(response);
-                                chrome.runtime.sendMessage({ message: "get", object: "stepmoney" }, function(response) {
+                                chrome.runtime.sendMessage({ message: "get", param1: "stepmoney" }, function(response) {
                                     $("#stepmoney").val(response);
-                                    chrome.runtime.sendMessage({ message: "get", object: "minrate" }, function(response) {
+                                    chrome.runtime.sendMessage({ message: "get", param1: "minrate" }, function(response) {
                                         $("#minrate").val(response);
-                                        chrome.runtime.sendMessage({ message: "get", object: "steprate" }, function(response) {
+                                        chrome.runtime.sendMessage({ message: "get", param1: "steprate" }, function(response) {
                                             $("#steprate").val(response);
                                         });
                                     });
@@ -39,16 +39,16 @@ function loadConfig() {
 $("#submit").click(function() {
     console.log("save config");
 
-    chrome.runtime.sendMessage({ message: "set", object: "telephone", value: $("#telephone").val() }, function() {
-        chrome.runtime.sendMessage({ message: "set", object: "username", value: $("#username").val() }, function() {
-            chrome.runtime.sendMessage({ message: "set", object: "userpass", value: $("#userpass").val() }, function() {
-                chrome.runtime.sendMessage({ message: "set", object: "tradepass", value: $("#tradepass").val() }, function() {
-                    chrome.runtime.sendMessage({ message: "set", object: "refresh", value: $("#refresh").val() }, function() {
-                        chrome.runtime.sendMessage({ message: "set", object: "maxmoney", value: $("#maxmoney").val() }, function() {
-                            chrome.runtime.sendMessage({ message: "set", object: "minmoney", value: $("#minmoney").val() }, function() {
-                                chrome.runtime.sendMessage({ message: "set", object: "stepmoney", value: $("#stepmoney").val() }, function() {
-                                    chrome.runtime.sendMessage({ message: "set", object: "minrate", value: $("#minrate").val() }, function() {
-                                        chrome.runtime.sendMessage({ message: "set", object: "steprate", value: $("#steprate").val() });
+    chrome.runtime.sendMessage({ message: "set", param1: "telephone", param2: $("#telephone").val() }, function() {
+        chrome.runtime.sendMessage({ message: "set", param1: "username", param2: $("#username").val() }, function() {
+            chrome.runtime.sendMessage({ message: "set", param1: "userpass", param2: $("#userpass").val() }, function() {
+                chrome.runtime.sendMessage({ message: "set", param1: "tradepass", param2: $("#tradepass").val() }, function() {
+                    chrome.runtime.sendMessage({ message: "set", param1: "refresh", param2: $("#refresh").val() }, function() {
+                        chrome.runtime.sendMessage({ message: "set", param1: "maxmoney", param2: $("#maxmoney").val() }, function() {
+                            chrome.runtime.sendMessage({ message: "set", param1: "minmoney", param2: $("#minmoney").val() }, function() {
+                                chrome.runtime.sendMessage({ message: "set", param1: "stepmoney", param2: $("#stepmoney").val() }, function() {
+                                    chrome.runtime.sendMessage({ message: "set", param1: "minrate", param2: $("#minrate").val() }, function() {
+                                        chrome.runtime.sendMessage({ message: "set", param1: "steprate", param2: $("#steprate").val() });
                                     });
                                 });
                             });
