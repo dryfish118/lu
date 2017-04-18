@@ -12,13 +12,11 @@ var WorkFlow = {
     WorkFlow_AcquireMaxRate: 11, // 获得当前最大利率
     WorkFlow_OpenProductListPage: 12, // 取资金内利率最大的产品列表
     WorkFlow_InjectProductList: 13, // 嵌入产品
-    WorkFlow_AcquireProductList: 14, // 获取产品信息
-    WorkFlow_OpenProductPage: 15, // 打开产品页面
-    WorkFlow_InjectProduct: 16, // 产品
-    WorkFlow_InjectTrade: 17, // 交易
-    WorkFlow_InjectContract: 18, // 支付确认
-    WorkFlow_InjectSecurity: 19, // 支付确认
-    WorkFlow_Agree: 20,
+    WorkFlow_OpenProductPage: 14, // 打开产品页面
+    WorkFlow_InjectProduct: 15, // 产品
+    WorkFlow_InjectTrade: 16, // 交易
+    WorkFlow_InjectContract: 17, // 合同
+    WorkFlow_InjectSecurity: 18, // 密码
 };
 
 var g_workFlow = WorkFlow.WorkFlow_Idle;
@@ -85,7 +83,7 @@ function getTradePass() {
 }
 
 function getRefresh() {
-    if (localStorage.refresh === undefined) {
+    if (localStorage.refresh === undefined || localStorage.refresh === "") {
         return 3000;
     } else {
         return parseInt(localStorage.refresh);
@@ -93,7 +91,7 @@ function getRefresh() {
 }
 
 function getMaxMoney() {
-    if (localStorage.maxmoney === undefined) {
+    if (localStorage.maxmoney === undefined || localStorage.maxmoney === "") {
         return 0;
     } else {
         return parseInt(localStorage.maxmoney);
@@ -101,7 +99,7 @@ function getMaxMoney() {
 }
 
 function getMinMoney() {
-    if (localStorage.minmoney === undefined) {
+    if (localStorage.minmoney === undefined || localStorage.minmoney === "") {
         return 5000;
     } else {
         return parseInt(localStorage.minmoney);
@@ -109,7 +107,7 @@ function getMinMoney() {
 }
 
 function getStepMoney() {
-    if (localStorage.stepmoney === undefined) {
+    if (localStorage.stepmoney === undefined || localStorage.stepmoney === "") {
         return 500;
     } else {
         return parseInt(localStorage.stepmoney);
@@ -117,7 +115,7 @@ function getStepMoney() {
 }
 
 function getMinRate() {
-    if (localStorage.minrate === undefined) {
+    if (localStorage.minrate === undefined || localStorage.minrate === "") {
         return 4.8;
     } else {
         return parseFloat(localStorage.minrate);
@@ -125,7 +123,7 @@ function getMinRate() {
 }
 
 function getStepRate() {
-    if (localStorage.steprate === undefined) {
+    if (localStorage.steprate === undefined || localStorage.steprate === "") {
         return 0.02;
     } else {
         return parseFloat(localStorage.steprate);
@@ -170,10 +168,8 @@ chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
         acquireMaxrate(param1, param2);
     } else if (message === "productlist") {
         acquireProductList(param1, param2);
-    } else if (message === "product" ||
-        message === "trade" ||
-        message === "contract" ||
-        message === "security") {
+    } else if (message === "product" || message === "trade" ||
+        message === "contract" || message === "security") {
         if (param1 === "No") {
             console.log("the product is sold, refresh & restart after %d\".", getRefresh() / 1000);
             setTimeout(openProductListPage, getRefresh());
@@ -221,9 +217,8 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
                     break;
                 }
             case WorkFlow.WorkFlow_InjectTrade:
-            case WorkFlow.WorkFlow_TradePageClicked:
                 {
-                    injectContract();
+                    injectContractPage();
                     break;
                 }
             case WorkFlow.WorkFlow_InjectContract:
@@ -256,14 +251,13 @@ function injectSecurity() {
 
     url_monitor = url_security;
     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
-        chrome.tabs.executeScript(g_tab.id, { file: "security.js" }, function() {
-            console.log("security.js injected.");
+        chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
             chrome.tabs.sendMessage(g_tab.id, { message: "security" });
         });
     });
 }
 
-function injectContract() {
+function injectContractPage() {
     if (g_terminate) {
         g_terminate = false;
         return;
@@ -274,8 +268,7 @@ function injectContract() {
 
     url_monitor = url_security;
     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
-        chrome.tabs.executeScript(g_tab.id, { file: "contract.js" }, function() {
-            console.log("contract.js injected.");
+        chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
             chrome.tabs.sendMessage(g_tab.id, { message: "contract" });
         });
     });
@@ -288,12 +281,11 @@ function injectTradePage() {
     }
 
     g_workFlow = WorkFlow.WorkFlow_InjectTrade;
-    console.log("WorkFlow_Trace");
+    console.log("WorkFlow_InjectTrace");
 
     url_monitor = url_contract;
     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
-        chrome.tabs.executeScript(g_tab.id, { file: "trade.js" }, function() {
-            console.log("trade.js injected.");
+        chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
             chrome.tabs.sendMessage(g_tab.id, { message: "trade" });
         });
     });
@@ -326,7 +318,7 @@ function openProductPage(url) {
     console.log("WorkFlow_OpenProductPage %s", url);
 
     url_monitor = url_list + url;
-    chrome.tabs.update({ openerTabId: g_tab.id, url: url_monitor });
+    chrome.tabs.update(g_tab.id, { url: url_monitor });
 }
 
 function acquireProductList(result, url) {
@@ -366,11 +358,11 @@ function openProductListPage() {
     }
 
     g_workFlow = WorkFlow.WorkFlow_OpenProductListPage;
-    console.log("WorkFlow_OpenProductListPage (%f%% %d %d)", g_rate, g_fromMoney, g_toMoney);
+    console.log("WorkFlow_OpenProductListPage (%s%% %d %d)", g_rate.toFixed(2), g_fromMoney, g_toMoney);
 
     url_monitor = url_r030;
     var strData = "?currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false&minMoney=" + g_fromMoney + "&maxMoney=" + g_toMoney;
-    chrome.tabs.update({ openerTabId: g_tab.id, url: url_monitor + strData });
+    chrome.tabs.update(g_tab.id, { url: url_monitor + strData });
 }
 
 function acquireMaxrate(result, rate) {
@@ -390,7 +382,7 @@ function acquireMaxrate(result, rate) {
         var minRate = getMinRate();
         var stepRate = getStepRate();
         if (minRate !== 0 && rate < minRate) {
-            console.log("current max rate(%f) is lower than the min rate(%f)", rate, minRate);
+            console.log("current max rate(%s) is lower than the min rate(%s)", rate.toFixed(2), minRate.toFixed(2));
             g_workFlow = WorkFlow.WorkFlow_Idle;
             console.log("WorkFlow_Idle");
         } else {
@@ -398,7 +390,7 @@ function acquireMaxrate(result, rate) {
             if (minRate !== 0 && g_rate < minRate) {
                 g_rate = minRate;
             }
-            console.log("valid rate:\t%f", g_rate);
+            console.log("valid rate:\t%s", g_rate.toFixed(2));
 
             openProductListPage();
         }
@@ -435,11 +427,11 @@ function acquireAvailableMoney(result, money) {
         g_workFlow = WorkFlow.WorkFlow_Idle;
         console.log("WorkFlow_Idle");
     } else {
-        console.log("available money:\t%f", money);
+        console.log("available money:\t%s", money.toFixed(2));
 
         var toMoney = getMaxMoney();
         if (toMoney !== 0 && toMoney < money) {
-            console.log("use the max money:\t%f", toMoney);
+            console.log("use the max money:\t%d", toMoney);
             money = toMoney;
         }
 
@@ -453,7 +445,8 @@ function acquireAvailableMoney(result, money) {
                 console.log("WorkFlow_Idle");
                 return;
             }
-        } else {
+        }
+        if (g_fromMoney < g_toMoney - getStepMoney()) {
             g_fromMoney = g_toMoney - getStepMoney();
         }
 
@@ -461,7 +454,7 @@ function acquireAvailableMoney(result, money) {
         console.log("WorkFlow_OpenMaxRatePage");
         url_monitor = url_r030;
         var strUrl = url_r030 + "?currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false";
-        chrome.tabs.update({ openerTabId: g_tab.id, url: strUrl });
+        chrome.tabs.update(g_tab.id, { url: strUrl });
     }
 }
 
@@ -494,7 +487,7 @@ function parseLoginPage() {
             console.log("WorkFlow_OpenLoginPage");
 
             url_monitor = url_login;
-            chrome.tabs.update({ openerTabId: g_tab.id, url: url_monitor });
+            chrome.tabs.update(g_tab.id, { url: url_monitor });
         } else {
             g_workFlow = WorkFlow.WorkFlow_InjectLogin;
             console.log("WorkFlow_InjectLogin");
@@ -538,7 +531,7 @@ function startWork() {
                 g_workFlow = WorkFlow.WorkFlow_OpenFundDetailPage;
                 console.log("WorkFlow_OpenFundDetailPage");
                 url_monitor = url_funddetail;
-                chrome.tabs.update({ openerTabId: g_tab.id, url: url_monitor });
+                chrome.tabs.update(g_tab.id, { url: url_monitor });
             }
         },
         error: function() {
@@ -563,6 +556,7 @@ chrome.browserAction.onClicked.addListener(function() {
                 return;
             }
             g_tab = tabs[0];
+            console.log("current tab is %d.", g_tab.id);
         });
 
         g_workFlow = WorkFlow.WorkFlow_Idle;

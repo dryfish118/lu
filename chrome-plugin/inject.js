@@ -39,12 +39,18 @@ function parseLoginPage() {
 }
 
 function parseFunddetailPage() {
-    var amount = $(".available-balance-wrap > .balance-amount").get(0);
-    if (amount === undefined) {
-        chrome.runtime.sendMessage({ message: "funddetail", param1: "No" });
-    } else {
-        chrome.runtime.sendMessage({ message: "funddetail", param1: "Yes", param2: parseFloat($(amount).text().replace(",", "")) });
-    }
+    chrome.runtime.sendMessage({ message: "log", param1: "parse fundetail page." }, function() {
+        var amount = $(".available-balance-wrap > .balance-amount").get(0);
+        if (amount === undefined) {
+            chrome.runtime.sendMessage({ message: "log", param1: "failed to get amount." }, function() {
+                chrome.runtime.sendMessage({ message: "funddetail", param1: "No" });
+            });
+        } else {
+            chrome.runtime.sendMessage({ message: "log", param1: "amount found." }, function() {
+                chrome.runtime.sendMessage({ message: "funddetail", param1: "Yes", param2: parseFloat($(amount).text().replace(",", "")) });
+            });
+        }
+    });
 }
 
 function parseMaxratePage() {
@@ -100,19 +106,17 @@ function parseProductListPage() {
                                         if (amount !== undefined) {
                                             product.amount = parseFloat($(amount).text().replace(",", ""));
 
-                                            var msg = "product information: {name: " + product.name + ", url: " + product.url + ", rate: " + product.rate + "%, amount:" + product.amount + "}";
-                                            chrome.runtime.sendMessage({ message: "log", param1: msg }, function() {
-                                                var i = 0;
-                                                for (; i < products.length; i++) {
-                                                    if (product.rate * product.amount > products[i].rate * products[i].amount) {
-                                                        products.splice(i, 0, product);
-                                                        break;
-                                                    }
+                                            var i = 0;
+                                            for (; i < products.length; i++) {
+                                                if (product.rate * product.amount > products[i].rate * products[i].amount) {
+                                                    break;
                                                 }
-                                                if (i === products.length) {
-                                                    products.push(product);
-                                                }
-                                            });
+                                            }
+                                            if (i === products.length) {
+                                                products.push(product);
+                                            } else {
+                                                products.splice(i, 0, product);
+                                            }
                                         }
                                     }
                                 }
@@ -136,7 +140,7 @@ function parseProductPage() {
     if (a.html() !== "") {
         $("body").bind("DOMNodeInserted", function() {
             if ($(".blockPage") !== undefined) {
-                chrome.runtime.sendMessage({ message: "click", object: "product", result: "No" });
+                chrome.runtime.sendMessage({ message: "product", param1: "No" });
             }
         });
 
@@ -144,7 +148,7 @@ function parseProductPage() {
         $(lijitouzi).html("<span id='lijitouzi'>" + $(lijitouzi).html() + "</span>");
         $("#lijitouzi").trigger("click");
     } else {
-        chrome.runtime.sendMessage({ message: "click", object: "product", result: "No" });
+        chrome.runtime.sendMessage({ message: "product", param1: "No" });
     }
 }
 
@@ -169,23 +173,22 @@ function parseSecurityPage() {
 }
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    chrome.runtime.sendMessage({ message: "log", param1: "Receive message: " + request.message }, function() {
-        if (request.message === "login") {
-            parseLoginPage();
-        } else if (request.message === "funddetail") {
-            parseFunddetailPage();
-        } else if (request.message === "maxrate") {
-            parseMaxratePage();
-        } else if (request.message === "productlist") {
-            parseProductListPage();
-        } else if (request.message === "product") {
-            parseProductPage();
-        } else if (request.message === "trade") {
-            parseTradePage();
-        } else if (request.message === "contract") {
-            parseContractPage();
-        } else if (request.message === "security") {
-            parseSecurityPage();
-        }
-    });
+    chrome.runtime.sendMessage({ message: "log", param1: "Receive message: " + request.message });
+    if (request.message === "login") {
+        parseLoginPage();
+    } else if (request.message === "funddetail") {
+        parseFunddetailPage();
+    } else if (request.message === "maxrate") {
+        parseMaxratePage();
+    } else if (request.message === "productlist") {
+        parseProductListPage();
+    } else if (request.message === "product") {
+        parseProductPage();
+    } else if (request.message === "trade") {
+        parseTradePage();
+    } else if (request.message === "contract") {
+        parseContractPage();
+    } else if (request.message === "security") {
+        parseSecurityPage();
+    }
 });
