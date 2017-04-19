@@ -307,19 +307,6 @@ function injectProductPage() {
     });
 }
 
-function openProductPage(url) {
-    if (g_terminate) {
-        g_terminate = false;
-        return;
-    }
-
-    g_workFlow = WorkFlow.WorkFlow_OpenProductPage;
-    console.log("WorkFlow_OpenProductPage %s", url);
-
-    url_monitor = url_list + url;
-    chrome.tabs.update(g_tab.id, { url: url_monitor });
-}
-
 function acquireProductList(result, url) {
     if (g_terminate) {
         g_terminate = false;
@@ -330,7 +317,11 @@ function acquireProductList(result, url) {
         console.log("failed to acquire the productlist, refresh & restart after %d\".", getRefresh() / 1000);
         setTimeout(openProductListPage, getRefresh());
     } else {
-        openProductPage(url);
+        g_workFlow = WorkFlow.WorkFlow_OpenProductPage;
+        console.log("WorkFlow_OpenProductPage %s", url);
+
+        url_monitor = url_list + url;
+        chrome.tabs.update(g_tab.id, { url: url_monitor });
     }
 }
 
@@ -389,7 +380,7 @@ function acquireMaxrate(result, rate) {
             if (minRate !== 0 && g_rate < minRate) {
                 g_rate = minRate;
             }
-            console.log("valid rate:\t%s", g_rate.toFixed(2));
+            console.log("the current nax rate:\t%s", g_rate.toFixed(2));
 
             openProductListPage();
         }

@@ -139,7 +139,9 @@ function parseProductListPage() {
 
 function parseProductPage() {
     var a = $("a[data-sk=lijitouzi]");
-    if (a.html() !== "") {
+    if (a.html() === "") {
+        chrome.runtime.sendMessage({ message: "product", param1: "No" });
+    } else {
         $("body").bind("DOMNodeInserted", function() {
             if ($(".blockPage") !== undefined) {
                 chrome.runtime.sendMessage({ message: "product", param1: "No" });
@@ -149,8 +151,6 @@ function parseProductPage() {
         var lijitouzi = a.first();
         $(lijitouzi).html("<span id='lijitouzi'>" + $(lijitouzi).html() + "</span>");
         $("#lijitouzi").trigger("click");
-    } else {
-        chrome.runtime.sendMessage({ message: "product", param1: "No" });
     }
 }
 
