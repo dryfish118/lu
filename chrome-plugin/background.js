@@ -4,9 +4,9 @@ var WorkFlow = {
     WorkFlow_OpenLoginPage: 3, // 打开登录页面
     WorkFlow_InjectLogin: 4, // 嵌入登录代码
     WorkFlow_AcquireUserInfo: 5, // 获取用户信息
-    WorkFlow_OpenFundDetailPage: 6, // 打开基金页面
-    WorkFlow_InjectFunddetail: 7, // 嵌入基金代码
-    WorkFlow_AcquireFundDetail: 8, // 获取用户可用金额
+    WorkFlow_OpenAccountPage: 6, // 打开基金页面
+    WorkFlow_InjectAccount: 7, // 嵌入基金代码
+    WorkFlow_AcquireAccount: 8, // 获取用户可用金额
     WorkFlow_OpenMaxRatePage: 9, // 以利率最大排序取产品列表
     WorkFlow_InjectMaxRate: 10, // 嵌入获取利率代码
     WorkFlow_AcquireMaxRate: 11, // 获得当前最大利率
@@ -34,7 +34,6 @@ var url_monitor;
 var url_login = "https://user.lu.com/user/login";
 var url_userinfo = "https://user.lu.com/user/service/user/current-user-info-for-homepage";
 var url_account = "https://my.lu.com/my/account";
-var url_funddetail = "https://my.lu.com/my/yeb/fund-detail";
 var url_r030 = "https://list.lu.com/list/r030";
 var url_list = "https://list.lu.com";
 var url_trade = "https://trading.lu.com/trading/trade-info";
@@ -162,8 +161,8 @@ chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
         localStorage[param1] = param2;
     } else if (message === "log") {
         console.log(param1);
-    } else if (message === "funddetail") {
-        acquireAvailableMoney(param1, param2);
+    } else if (message === "account") {
+        acquireAccount(param1, param2);
     } else if (message === "maxrate") {
         acquireMaxrate(param1, param2);
     } else if (message === "productlist") {
@@ -183,7 +182,7 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
         switch (g_workFlow) {
             case WorkFlow.WorkFlow_OpenLoginPage:
                 {
-                    parseLoginPage();
+                    injectLoginPage();
                     break;
                 }
             case WorkFlow.WorkFlow_InjectLogin:
@@ -191,9 +190,9 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
                     startWork();
                     break;
                 }
-            case WorkFlow.WorkFlow_OpenFundDetailPage:
+            case WorkFlow.WorkFlow_OpenAccountPage:
                 {
-                    injectFunddetailPage();
+                    injectAccountPage();
                     break;
                 }
             case WorkFlow.WorkFlow_OpenMaxRatePage:
@@ -236,7 +235,7 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
         }
     } else if (g_workFlow === WorkFlow.WorkFlow_InjectLogin && isUrlMatch(url_login, details.url)) {
         console.log("failed to login, try again.");
-        parseLoginPage();
+        doLogin();
     }
 });
 
@@ -413,14 +412,14 @@ function injectMaxRatePage() {
     });
 }
 
-function acquireAvailableMoney(result, money) {
+function acquireAccount(result, money) {
     if (g_terminate) {
         g_terminate = false;
         return;
     }
 
-    g_workFlow = WorkFlow.WorkFlow_AcquireFundDetail;
-    console.log("WorkFlow_AcquireFundDetail");
+    g_workFlow = WorkFlow.WorkFlow_AcquireAccount;
+    console.log("WorkFlow_AcquireAcount");
 
     if (result === "No") {
         console.log("failed to acquire the available amount");
@@ -458,48 +457,50 @@ function acquireAvailableMoney(result, money) {
     }
 }
 
-function injectFunddetailPage() {
+function injectAccountPage() {
     if (g_terminate) {
         g_terminate = false;
         return;
     }
 
-    g_workFlow = WorkFlow.WorkFlow_InjectFunddetail;
-    console.log("WorkFlow_InjectFunddetail");
+    g_workFlow = WorkFlow.WorkFlow_InjectAccount;
+    console.log("WorkFlow_InjectAccount");
 
     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
         chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
-            chrome.tabs.sendMessage(g_tab.id, { message: "funddetail" });
+            chrome.tabs.sendMessage(g_tab.id, { message: "account" });
         });
     });
 }
 
-function parseLoginPage() {
+function injectLoginPage() {
     if (g_terminate) {
         g_terminate = false;
         return;
     }
 
-    chrome.tabs.query({ windowId: g_tab.windowId, index: g_tab.index }, function(tabs) {
-        console.log("current url: %s", tabs[0].url);
-        if (!isUrlMatch(url_login, tabs[0].url)) {
-            g_workFlow = WorkFlow.WorkFlow_OpenLoginPage;
-            console.log("WorkFlow_OpenLoginPage");
+    g_workFlow = WorkFlow.WorkFlow_InjectLogin;
+    console.log("WorkFlow_InjectLogin");
 
-            url_monitor = url_login;
-            chrome.tabs.update(g_tab.id, { url: url_monitor });
-        } else {
-            g_workFlow = WorkFlow.WorkFlow_InjectLogin;
-            console.log("WorkFlow_InjectLogin");
-
-            url_monitor = url_account;
-            chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
-                chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
-                    chrome.tabs.sendMessage(g_tab.id, { message: "login" });
-                });
-            });
-        }
+    url_monitor = url_account;
+    chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
+        chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
+            chrome.tabs.sendMessage(g_tab.id, { message: "login" });
+        });
     });
+}
+
+function doLogin() {
+    if (g_terminate) {
+        g_terminate = false;
+        return;
+    }
+
+    g_workFlow = WorkFlow.WorkFlow_OpenLoginPage;
+    console.log("WorkFlow_OpenLoginPage");
+
+    url_monitor = url_login;
+    chrome.tabs.update(g_tab.id, { url: url_monitor });
 }
 
 function startWork() {
@@ -516,7 +517,7 @@ function startWork() {
         dataType: "json",
         success: function(data) {
             if (data.uid === undefined) {
-                parseLoginPage();
+                doLogin();
             } else {
                 g_workFlow = WorkFlow.WorkFlow_AcquireUserInfo;
                 console.log("WorkFlow_AcquireUserInfo");
@@ -528,9 +529,9 @@ function startWork() {
                 console.log("user name:\t%s", g_userName);
                 console.log("mobile:\t%s", g_mobileNo);
 
-                g_workFlow = WorkFlow.WorkFlow_OpenFundDetailPage;
-                console.log("WorkFlow_OpenFundDetailPage");
-                url_monitor = url_funddetail;
+                g_workFlow = WorkFlow.WorkFlow_OpenAccountPage;
+                console.log("WorkFlow_OpenAccountPage");
+                url_monitor = url_account;
                 chrome.tabs.update(g_tab.id, { url: url_monitor });
             }
         },

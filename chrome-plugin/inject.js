@@ -1,56 +1,58 @@
-chrome.runtime.sendMessage({ message: "log", param1: "inject.js injected." });
-
-function parseLoginPage() {
-    chrome.runtime.sendMessage({ message: "get", param1: "telephone" }, function(response) {
-        var telephone = response;
-        chrome.runtime.sendMessage({ message: "log", param1: "aquire telephone: " + telephone }, function() {
-            if (telephone === "") {
-                chrome.runtime.sendMessage({ message: "log", param1: "login by username" }, function() {
-                    $("div[data-role=userName]").trigger("click");
-                    chrome.runtime.sendMessage({ message: "get", param1: "username" }, function(response) {
-                        var username = response;
-                        chrome.runtime.sendMessage({ message: "log", param1: "aquire username: " + username }, function() {
-                            $("#userNameLogin").val(username);
-                            chrome.runtime.sendMessage({ message: "get", param1: "userpass" }, function(response) {
-                                var pass = response;
-                                chrome.runtime.sendMessage({ message: "log", param1: "aquire password " }, function() {
-                                    $("#pwd").val(pass);
-                                    $("#loginFlagnew").trigger("click");
-                                });
-                            });
-                        });
-                    });
-                });
-            } else {
-                $("div[data-role=mobile]").trigger("click");
-                chrome.runtime.sendMessage({ message: "log", param1: "login by telephone" }, function() {
-                    $("#userNameLogin").val(telephone);
-                    chrome.runtime.sendMessage({ message: "get", param1: "userpass" }, function(response) {
-                        var pass = response;
-                        chrome.runtime.sendMessage({ message: "log", param1: "aquire password " }, function() {
-                            $("#pwd").val(pass);
-                            $("#loginFlagnew").trigger("click");
-                        });
-                    });
-                });
-            }
-        });
-    });
+function sendLog(msg) {
+    chrome.runtime.sendMessage({ message: "log", param1: msg });
 }
 
-function parseFunddetailPage() {
-    chrome.runtime.sendMessage({ message: "log", param1: "parse fundetail page." }, function() {
-        var amount = $(".available-balance-wrap > .balance-amount").get(0);
-        if (amount === undefined) {
-            chrome.runtime.sendMessage({ message: "log", param1: "failed to get amount." }, function() {
-                chrome.runtime.sendMessage({ message: "funddetail", param1: "No" });
+sendLog("inject.js injected.");
+
+function injectLoginPage() {
+    chrome.runtime.sendMessage({ message: "get", param1: "telephone" }, function(response) {
+        var telephone = response;
+        sendLog("aquire telephone: " + telephone);
+        if (telephone === "") {
+            sendLog("login by username");
+            $("div[data-role=userName]").trigger("click");
+            chrome.runtime.sendMessage({ message: "get", param1: "username" }, function(response) {
+                var username = response;
+                sendLog("aquire username: " + username);
+                $("#userNameLogin").val(username);
+                chrome.runtime.sendMessage({ message: "get", param1: "userpass" }, function(response) {
+                    var pass = response;
+                    sendLog("aquire password ");
+                    $("#pwd").val(pass);
+                    $("#loginFlagnew").trigger("click");
+                });
             });
         } else {
-            chrome.runtime.sendMessage({ message: "log", param1: "amount found." }, function() {
-                chrome.runtime.sendMessage({ message: "funddetail", param1: "Yes", param2: parseFloat($(amount).text().replace(",", "")) });
+            $("div[data-role=mobile]").trigger("click");
+            sendLog("login by telephone");
+            $("#userNameLogin").val(telephone);
+            chrome.runtime.sendMessage({ message: "get", param1: "userpass" }, function(response) {
+                var pass = response;
+                sendLog("acquired password.");
+                $("#pwd").val(pass);
+                $("#loginFlagnew").trigger("click");
             });
         }
     });
+}
+
+function parseAccountPage() {
+    sendLog("parse account page.");
+    var yue = $(".account-balance-item  .coin-point-item-number").get(0);
+    if (yue === undefined) {
+        sendLog("failed to get yu e.");
+        chrome.runtime.sendMessage({ message: "account", param1: "No" });
+    } else {
+        var linghuobao = $(".coin-point-item-lujinbao  .coin-point-item-number").get(0);
+        if (linghuobao === undefined) {
+            sendLog("failed to get linghuobao.");
+            chrome.runtime.sendMessage({ message: "account", param1: "No" });
+        } else {
+            var amount = parseFloat($(yue).text().replace(",", "")) + parseFloat($(linghuobao).text().replace(",", ""));
+            sendLog("amount found %f.", amount.toFixed(2));
+            chrome.runtime.sendMessage({ message: "account", param1: "Yes", param2: amount });
+        }
+    }
 }
 
 function parseMaxratePage() {
@@ -162,22 +164,20 @@ function parseContractPage() {
 
 function parseSecurityPage() {
     $("#kycConfirmCB").click(function() {
-        console.log("kycConfirmCB clicked.");
         var confirm = $("#kycOtpConfirm").first();
         $(confirm).html("<span id='btnconfirm'>" + $(confirm).html() + "</span>");
         $("#btnconfirm").trigger("click");
     });
 
-    console.log("trigger click to kycConfirmCB.");
     $("#kycConfirmCB").trigger("click");
 }
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    chrome.runtime.sendMessage({ message: "log", param1: "Receive message: " + request.message });
+    sendLog("Receive message: " + request.message);
     if (request.message === "login") {
-        parseLoginPage();
-    } else if (request.message === "funddetail") {
-        parseFunddetailPage();
+        injectLoginPage();
+    } else if (request.message === "account") {
+        parseAccountPage();
     } else if (request.message === "maxrate") {
         parseMaxratePage();
     } else if (request.message === "productlist") {
