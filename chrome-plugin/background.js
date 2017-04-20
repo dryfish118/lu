@@ -29,7 +29,9 @@ var g_mobileNo;
 var g_fromMoney;
 var g_toMoney;
 var g_rate;
-var url_monitor;
+var g_nextUrl;
+var g_curProduct;
+var g_blackProducts;
 
 var url_login = "https://user.lu.com/user/login";
 var url_userinfo = "https://user.lu.com/user/service/user/current-user-info-for-homepage";
@@ -170,14 +172,16 @@ chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
     } else if (message === "product" || message === "trade" ||
         message === "contract" || message === "security") {
         if (param1 === "No") {
-            console.log("the product is sold, refresh & restart after %d\".", getRefresh() / 1000);
-            setTimeout(openProductListPage, getRefresh());
+            console.log("the product is sold, restart.");
+            g_blackProducts.push(g_curProduct);
+            g_curProduct = null;
+            openProductListPage();
         }
     }
 });
 
 chrome.webNavigation.onCompleted.addListener(function(details) {
-    if (isUrlMatch(url_monitor, details.url)) {
+    if (isUrlMatch(g_nextUrl, details.url)) {
         console.log("onCompleted %s", details.url);
         switch (g_workFlow) {
             case WorkFlow.WorkFlow_OpenLoginPage:
@@ -248,7 +252,7 @@ function injectSecurity() {
     g_workFlow = WorkFlow.WorkFlow_InjectSecurity;
     console.log("WorkFlow_InjectSecurity");
 
-    url_monitor = url_security;
+    g_nextUrl = url_security;
     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
         chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
             chrome.tabs.sendMessage(g_tab.id, { message: "security" });
@@ -265,7 +269,7 @@ function injectContractPage() {
     g_workFlow = WorkFlow.WorkFlow_InjectContract;
     console.log("WorkFlow_InjectContract");
 
-    url_monitor = url_security;
+    g_nextUrl = url_security;
     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
         chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
             chrome.tabs.sendMessage(g_tab.id, { message: "contract" });
@@ -282,7 +286,7 @@ function injectTradePage() {
     g_workFlow = WorkFlow.WorkFlow_InjectTrade;
     console.log("WorkFlow_InjectTrace");
 
-    url_monitor = url_contract;
+    g_nextUrl = url_contract;
     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
         chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
             chrome.tabs.sendMessage(g_tab.id, { message: "trade" });
@@ -299,7 +303,7 @@ function injectProductPage() {
     g_workFlow = WorkFlow.WorkFlow_InjectProduct;
     console.log("WorkFlow_InjectProduct");
 
-    url_monitor = url_trade;
+    g_nextUrl = url_trade;
     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
         chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
             chrome.tabs.sendMessage(g_tab.id, { message: "product" });
@@ -307,7 +311,7 @@ function injectProductPage() {
     });
 }
 
-function acquireProductList(result, url) {
+function acquireProductList(result, urls) {
     if (g_terminate) {
         g_terminate = false;
         return;
@@ -318,10 +322,23 @@ function acquireProductList(result, url) {
         setTimeout(openProductListPage, getRefresh());
     } else {
         g_workFlow = WorkFlow.WorkFlow_OpenProductPage;
-        console.log("WorkFlow_OpenProductPage %s", url);
+        console.log("WorkFlow_OpenProductPage");
 
-        url_monitor = url_list + url;
-        chrome.tabs.update(g_tab.id, { url: url_monitor });
+        var i = 0;
+        for (; i < urls.length; i++) {
+            if (!g_blackProducts.includes(urls.get(i))) {
+                break;
+            }
+        }
+
+        if (i === urls.length) {
+            console.log("all products are sold, refresh & restart after %d\".", getRefresh() / 1000);
+            setTimeout(openProductListPage, getRefresh());
+        } else {
+            g_curProduct = url;
+            g_nextUrl = url_list + url;
+            chrome.tabs.update(g_tab.id, { url: g_nextUrl });
+        }
     }
 }
 
@@ -350,9 +367,9 @@ function openProductListPage() {
     g_workFlow = WorkFlow.WorkFlow_OpenProductListPage;
     console.log("WorkFlow_OpenProductListPage (%s%% %d %d)", g_rate.toFixed(2), g_fromMoney, g_toMoney);
 
-    url_monitor = url_r030;
+    g_nextUrl = url_r030;
     var strData = "?currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false&minMoney=" + g_fromMoney + "&maxMoney=" + g_toMoney;
-    chrome.tabs.update(g_tab.id, { url: url_monitor + strData });
+    chrome.tabs.update(g_tab.id, { url: g_nextUrl + strData });
 }
 
 function acquireMaxrate(result, rate) {
@@ -442,7 +459,7 @@ function acquireAccount(result, money) {
 
         g_workFlow = WorkFlow.WorkFlow_OpenMaxRatePage;
         console.log("WorkFlow_OpenMaxRatePage");
-        url_monitor = url_r030;
+        g_nextUrl = url_r030;
         var strUrl = url_r030 + "?currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false";
         chrome.tabs.update(g_tab.id, { url: strUrl });
     }
@@ -473,7 +490,7 @@ function injectLoginPage() {
     g_workFlow = WorkFlow.WorkFlow_InjectLogin;
     console.log("WorkFlow_InjectLogin");
 
-    url_monitor = url_account;
+    g_nextUrl = url_account;
     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
         chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
             chrome.tabs.sendMessage(g_tab.id, { message: "login" });
@@ -490,8 +507,8 @@ function doLogin() {
     g_workFlow = WorkFlow.WorkFlow_OpenLoginPage;
     console.log("WorkFlow_OpenLoginPage");
 
-    url_monitor = url_login;
-    chrome.tabs.update(g_tab.id, { url: url_monitor });
+    g_nextUrl = url_login;
+    chrome.tabs.update(g_tab.id, { url: g_nextUrl });
 }
 
 function startWork() {
@@ -502,6 +519,8 @@ function startWork() {
 
     g_workFlow = WorkFlow.WorkFlow_Start;
     console.log("WorkFlow_Start");
+
+    g_blackProducts = [];
 
     $.ajax({
         url: url_userinfo,
@@ -522,8 +541,8 @@ function startWork() {
 
                 g_workFlow = WorkFlow.WorkFlow_OpenAccountPage;
                 console.log("WorkFlow_OpenAccountPage");
-                url_monitor = url_account;
-                chrome.tabs.update(g_tab.id, { url: url_monitor });
+                g_nextUrl = url_account;
+                chrome.tabs.update(g_tab.id, { url: g_nextUrl });
             }
         },
         error: function() {

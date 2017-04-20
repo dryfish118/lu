@@ -131,7 +131,15 @@ function parseProductListPage() {
             if (products.length === 0) {
                 chrome.runtime.sendMessage({ message: "productlist", param1: "No" });
             } else {
-                chrome.runtime.sendMessage({ message: "productlist", param1: "Yes", param2: products[0].url });
+                var data = "{message: \"productlist\", param1: \"Yes\", param2: [";
+                for (var i = 0; i < products.length; i++) {
+                    if (i !== 0) {
+                        data += ",";
+                    }
+                    data += "\"" + products[i].url + "\"";
+                }
+                data += "]}";
+                chrome.runtime.sendMessage(data);
             }
         });
     }
@@ -155,10 +163,22 @@ function parseProductPage() {
 }
 
 function parseTradePage() {
+    $("body").bind("DOMNodeInserted", function() {
+        if ($(".blockPage") !== undefined) {
+            chrome.runtime.sendMessage({ message: "trade", param1: "No" });
+        }
+    });
+
     $(".infoNextBtn span").trigger("click");
 }
 
 function parseContractPage() {
+    $("body").bind("DOMNodeInserted", function() {
+        if ($(".blockPage") !== undefined) {
+            chrome.runtime.sendMessage({ message: "contract", param1: "No" });
+        }
+    });
+
     $(".infoNextBtn span").trigger("click");
 }
 
