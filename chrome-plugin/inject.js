@@ -49,7 +49,7 @@ function parseAccountPage() {
             chrome.runtime.sendMessage({ message: "account", param1: "No" });
         } else {
             var amount = parseFloat($(yue).text().replace(",", "")) + parseFloat($(linghuobao).text().replace(",", ""));
-            sendLog("amount found %f.", amount.toFixed(2));
+            sendLog("amount found " + amount.toFixed(2));
             chrome.runtime.sendMessage({ message: "account", param1: "Yes", param2: amount });
         }
     }
@@ -80,45 +80,45 @@ var LuProduct = {
     }
 };
 
-function parseProductListPage() {
+function parseProductListPage(validRate) {
     var productList = $(".product-list");
     if (productList === undefined || productList.length === 0) {
         chrome.runtime.sendMessage({ message: "productlist", param1: "No" });
     } else {
-        chrome.runtime.sendMessage({ message: "get", param1: "validrate" }, function(response) {
-            var validRate = response;
-            var products = [];
-            productList.each(function() {
-                var product = LuProduct.createProduct();
-                var status = $(this).find(".product-status").get(0);
-                if (status !== undefined) {
-                    var a = $(status).find("a");
-                    if ($(a).attr("data-sk") === "invest_list") {
-                        var rate = $(this).find(".interest-rate .num-style").get(0);
-                        if (rate !== undefined) {
-                            product.rate = parseFloat($(rate).text());
-                            if (product.rate >= validRate) {
-                                var name = $(this).find(".product-name").get(0);
-                                if (name !== undefined) {
-                                    a = $(name).find("a");
-                                    product.name = $(a).text();
-                                    product.url = $(a).attr("href");
-                                    if (product.url !== undefined && product.url.length > 0) {
-                                        var amount = $(this).find(".product-amount .num-style").get(0);
-                                        if (amount !== undefined) {
-                                            product.amount = parseFloat($(amount).text().replace(",", ""));
+        console.log("the valid rate is %f", validRate);
+        var products = [];
+        productList.each(function() {
+            var product = LuProduct.createProduct();
+            var status = $(this).find(".product-status").get(0);
+            if (status !== undefined) {
+                var a = $(status).find("a");
+                if ($(a).attr("data-sk") === "invest_list") {
+                    var rate = $(this).find(".interest-rate .num-style").get(0);
+                    if (rate !== undefined) {
+                        //console.log("the product rate is %s", $(rate).text());
+                        product.rate = parseFloat($(rate).text());
+                        //console.log("the product rate is %s", product.rate.toFixed(2));
+                        if (parseInt(product.rate * 100) >= parseInt(validRate * 100)) {
+                            var name = $(this).find(".product-name").get(0);
+                            if (name !== undefined) {
+                                a = $(name).find("a");
+                                product.name = $(a).text();
+                                product.url = $(a).attr("href");
+                                if (product.url !== undefined && product.url.length > 0) {
+                                    var amount = $(this).find(".product-amount .num-style").get(0);
+                                    if (amount !== undefined) {
+                                        product.amount = parseFloat($(amount).text().replace(",", ""));
 
-                                            var i = 0;
-                                            for (; i < products.length; i++) {
-                                                if (product.rate * product.amount > products[i].rate * products[i].amount) {
-                                                    break;
-                                                }
+                                        var i = 0;
+                                        for (; i < products.length; i++) {
+                                            if (product.rate * product.amount > products[i].rate * products[i].amount) {
+                                                break;
                                             }
-                                            if (i === products.length) {
-                                                products.push(product);
-                                            } else {
-                                                products.splice(i, 0, product);
-                                            }
+                                        }
+                                        if (i === products.length) {
+                                            products.push(product);
+                                        } else {
+                                            products.splice(i, 0, product);
                                         }
                                     }
                                 }
@@ -126,36 +126,41 @@ function parseProductListPage() {
                         }
                     }
                 }
-            });
-
-            if (products.length === 0) {
-                chrome.runtime.sendMessage({ message: "productlist", param1: "No" });
-            } else {
-                var data = "{message: \"productlist\", param1: \"Yes\", param2: [";
-                for (var i = 0; i < products.length; i++) {
-                    if (i !== 0) {
-                        data += ",";
-                    }
-                    data += "\"" + products[i].url + "\"";
-                }
-                data += "]}";
-                chrome.runtime.sendMessage(data);
             }
         });
+
+        if (products.length === 0) {
+            chrome.runtime.sendMessage({ message: "productlist", param1: "No" });
+        } else {
+            var data = { message: "productlist", param1: "Yes", param2: [] };
+            for (var ii = 0; ii < products.length; ii++) {
+                data.param2.push(products[ii].url);
+            }
+            chrome.runtime.sendMessage(data);
+        }
     }
 }
 
 function parseProductPage() {
-    var a = $("a[data-sk=lijitouzi]");
-    if (a.html() === "") {
+    sendLog("parseProductPage");
+    var done = $("div .done-info");
+    if (done !== undefined && $(done).html() !== undefined) {
+        console.log($(done).html());
+        sendLog("done");
         chrome.runtime.sendMessage({ message: "product", param1: "No" });
     } else {
-        $("body").bind("DOMNodeInserted", function() {
-            if ($(".blockPage") !== undefined) {
+        $("body").bind("DOMNodeInserted", function(e) {
+            sendLog("DOMNodeInserted");
+            var obj = jQuery(e.target);
+            if (obj.hasClass("blockPage")) {
+                $("body").unbind("DOMNodeInserted");
+                sendLog("blockPage");
                 chrome.runtime.sendMessage({ message: "product", param1: "No" });
             }
         });
 
+        sendLog("trigger click");
+        var a = $("a[data-sk=lijitouzi]");
         var lijitouzi = a.first();
         $(lijitouzi).html("<span id='lijitouzi'>" + $(lijitouzi).html() + "</span>");
         $("#lijitouzi").trigger("click");
@@ -163,22 +168,33 @@ function parseProductPage() {
 }
 
 function parseTradePage() {
+    console.log("parseTradePage");
     $("body").bind("DOMNodeInserted", function() {
-        if ($(".blockPage") !== undefined) {
+        sendLog("DOMNodeInserted");
+        var obj = jQuery(e.target);
+        if (obj.hasClass("blockPage")) {
+            $("body").unbind("DOMNodeInserted");
+            sendLog("blockPage");
             chrome.runtime.sendMessage({ message: "trade", param1: "No" });
         }
     });
 
+    sendLog("trigger click");
     $(".infoNextBtn span").trigger("click");
 }
 
 function parseContractPage() {
     $("body").bind("DOMNodeInserted", function() {
-        if ($(".blockPage") !== undefined) {
+        sendLog("DOMNodeInserted");
+        var obj = jQuery(e.target);
+        if (obj.hasClass("blockPage")) {
+            $("body").unbind("DOMNodeInserted");
+            sendLog("blockPage");
             chrome.runtime.sendMessage({ message: "contract", param1: "No" });
         }
     });
 
+    sendLog("trigger click");
     $(".infoNextBtn span").trigger("click");
 }
 
@@ -201,7 +217,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     } else if (request.message === "maxrate") {
         parseMaxratePage();
     } else if (request.message === "productlist") {
-        parseProductListPage();
+        parseProductListPage(parseFloat(request.maxrate));
     } else if (request.message === "product") {
         parseProductPage();
     } else if (request.message === "trade") {

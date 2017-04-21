@@ -172,7 +172,7 @@ chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
     } else if (message === "product" || message === "trade" ||
         message === "contract" || message === "security") {
         if (param1 === "No") {
-            console.log("the product is sold, restart.");
+            console.log("the product (%s) is sold, restart.", g_curProduct);
             g_blackProducts.push(g_curProduct);
             g_curProduct = null;
             openProductListPage();
@@ -326,7 +326,7 @@ function acquireProductList(result, urls) {
 
         var i = 0;
         for (; i < urls.length; i++) {
-            if (!g_blackProducts.includes(urls.get(i))) {
+            if (!g_blackProducts.includes(urls[i])) {
                 break;
             }
         }
@@ -335,8 +335,8 @@ function acquireProductList(result, urls) {
             console.log("all products are sold, refresh & restart after %d\".", getRefresh() / 1000);
             setTimeout(openProductListPage, getRefresh());
         } else {
-            g_curProduct = url;
-            g_nextUrl = url_list + url;
+            g_curProduct = urls[i];
+            g_nextUrl = url_list + urls[i];
             chrome.tabs.update(g_tab.id, { url: g_nextUrl });
         }
     }
@@ -353,7 +353,7 @@ function injectProductListPage() {
 
     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
         chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
-            chrome.tabs.sendMessage(g_tab.id, { message: "productlist" });
+            chrome.tabs.sendMessage(g_tab.id, { message: "productlist", maxrate: g_rate });
         });
     });
 }
@@ -397,7 +397,7 @@ function acquireMaxrate(result, rate) {
             if (minRate !== 0 && g_rate < minRate) {
                 g_rate = minRate;
             }
-            console.log("the current nax rate:\t%s", g_rate.toFixed(2));
+            console.log("the current max rate:\t%s", g_rate.toFixed(2));
 
             openProductListPage();
         }
