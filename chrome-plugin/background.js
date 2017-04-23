@@ -41,15 +41,7 @@ var url_list = "https://list.lu.com";
 var url_trade = "https://trading.lu.com/trading/trade-info";
 var url_contract = "https://trading.lu.com/trading/contract-info";
 var url_security = "https://trading.lu.com/trading/security-valid";
-
-function isUrlMatch(url1, url2) {
-    if (url1 !== undefined && url2 !== undefined) {
-        url1 = url1.toLowerCase();
-        url2 = url2.substr(0, url1.length).toLowerCase();
-        return (url1 === url2);
-    }
-    return false;
-}
+var url_error = "https://promo.lu.com/transfer/v1/status_error.html";
 
 function getTelephone() {
     if (localStorage.telephone === undefined) {
@@ -180,13 +172,22 @@ chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
     }
 });
 
+function isUrlMatch(url1, url2) {
+    if (url1 !== undefined && url2 !== undefined) {
+        url1 = url1.toLowerCase();
+        url2 = url2.substr(0, url1.length).toLowerCase();
+        return (url1 === url2);
+    }
+    return false;
+}
+
 chrome.webNavigation.onCompleted.addListener(function(details) {
     if (isUrlMatch(g_nextUrl, details.url)) {
         console.log("onCompleted %s", details.url);
         switch (g_workFlow) {
             case WorkFlow.WorkFlow_OpenLoginPage:
                 {
-                    injectLoginPage();
+                    parseLoginPage();
                     break;
                 }
             case WorkFlow.WorkFlow_InjectLogin:
@@ -225,21 +226,24 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
                     break;
                 }
             case WorkFlow.WorkFlow_InjectContract:
-            case WorkFlow.WorkFlow_ContractPageClick:
                 {
                     injectSecurity();
                     break;
                 }
             case WorkFlow.WorkFlow_InjectSecurity:
-            case WorkFlow.WorkFlow_SecurityPageClick:
                 {
-                    //doSecurity();
+                    g_workFlow = WorkFlow.WorkFlow_Idle;
+                    console.log("WorkFlow_Idle");
                     break;
                 }
         }
     } else if (g_workFlow === WorkFlow.WorkFlow_InjectLogin && isUrlMatch(url_login, details.url)) {
         console.log("failed to login, try again.");
         doLogin();
+    } else if (isUrlMatch(url_error, details.url)) {
+        console.log("error, try again.");
+        g_curProduct = null;
+        openProductListPage();
     }
 });
 
@@ -252,10 +256,9 @@ function injectSecurity() {
     g_workFlow = WorkFlow.WorkFlow_InjectSecurity;
     console.log("WorkFlow_InjectSecurity");
 
-    g_nextUrl = url_security;
     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
         chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
-            chrome.tabs.sendMessage(g_tab.id, { message: "security" });
+            chrome.tabs.sendMessage(g_tab.id, { message: "security", pass: getTradePass() });
         });
     });
 }
@@ -481,7 +484,7 @@ function injectAccountPage() {
     });
 }
 
-function injectLoginPage() {
+function parseLoginPage() {
     if (g_terminate) {
         g_terminate = false;
         return;

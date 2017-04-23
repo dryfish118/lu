@@ -16,8 +16,12 @@
         $(function() {
             $("#button1").click(function() {
                 console.log("click button1");
-                $("#button2").trigger("click");
+                //$("#button2").trigger("click");
                 //$("#kycConfirmCB").trigger("click");
+                $("#contractAgree").trigger("click");
+            });
+            $("#contractAgree").click(function() {
+                console.log("contractAgree is clicked and value is " + $(this).prop("checked"));
             });
             $("#button2").click(function() {
                 console.log("click button2");
@@ -60,6 +64,10 @@
             <a class="btns btn_info" data-sk="Confirm_SMS" id="kycOtpConfirm" href="javascript:void(0);">确定</a>
         </div>
     </div>
+    <p class="agree-label">
+        <input type="checkbox" data-sk="options_R01" name="agreeInvest" id="contractAgree" />
+        <label for="contractAgree" id="contract-agree-text">点一下试试</label>
+    </p>
 </body>
 
 </html>

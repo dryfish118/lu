@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>确认合同-投资-平安陆金所</title>
+    <title>安全验证-投资-平安陆金所</title>
     <meta name="keywords" content="$keywords">
     <meta name="description" content=$description>
     <meta name="WT.pn_sku" content="投资">
@@ -16,9 +16,9 @@
     <link type="text/css" rel="stylesheet" href="//static.lufaxcdn.com/lufax-public/lufax-public/lufax-public.5ba24e42.css" />
     <link type="text/css" rel="stylesheet" href="//static.lufaxcdn.com/lufax-public/lufax-lib/lufax-lib.717f0a66.css" />
 
-    <link rel="stylesheet" type="text/css" href="https://static.lufaxcdn.com/trading/resource/module/investment.1b2e3522.css">
-    <link rel="stylesheet" type="text/css" href="https://static.lufaxcdn.com/trading/resource/module/forHTML.d9df401d.css">
+    <link rel="stylesheet" type="text/css" href="https://static.lufaxcdn.com/trading/resource/module/investment_new.f35fb839.css">
     <link rel="stylesheet" type="text/css" href="https://static.lufaxcdn.com/trading/resource/module/step-cm.dc48afed.css">
+    <link rel="stylesheet" type="text/css" href="https://static.lufaxcdn.com/trading/resource/module/popBankSelect.7f4fa95d.css">
 
     <script type="text/javascript">
         document.domain = 'lu.com';
@@ -130,33 +130,33 @@
         </div>
     </script>
 
+
+
+
+
+    <link rel="stylesheet" type="text/css" href="https://static.lufaxcdn.com/config/css/pa_ui.css">
     <input type="hidden" id="current-page" value="investment" />
-    <input type="hidden" id="instId" value="" />
-    <input type="hidden" id="sid" value="277395816" />
-    <input type="hidden" id="productId" value="145649222" />
-    <input type="hidden" id="sourceType" value="R" />
-    <input type="hidden" id="riskLevel" value="1" />
-    <input type="hidden" id="productType" value="LOAN_REQUEST" />
-    <input type="hidden" id="productCategory" value="R01" />
-    <input type="hidden" id="amount" value="" />
-    <input type="hidden" id="isFirstSplitProduct" value="" />
-    <input type="hidden" id="isLastSplitProduct" value="" />
-    <input type="hidden" id="tradingMode" value="00" />
-    <input type="hidden" id="skuCode" value="" />
-    <input type="hidden" id="isFixedRate" value="" />
-    <input type="hidden" id="province" value="" />
-    <input type="hidden" id="city" value="" />
-    <input type="hidden" id="address" value="" />
-    <input type="hidden" id="signProvince" value="" />
-    <input type="hidden" id="recommendId" value="" />
-    <input type="hidden" id="email" value="" />
-    <input type="hidden" id="bankName" value="" />
-    <input type="hidden" id="bankNoTail" value="" />
-    <input type="hidden" id="kycCheckResult" value="00" />
-    <input type="hidden" id="mobileNo" value="18511478118">
-    <input type="hidden" id="insuranceFeeFlag" value="" />
-    <input type="hidden" id="buyType" value="" />
-    <input type="hidden" id="targetProductId" value="" />
+    <input type="hidden" name="productId" id="sourceType" value="R" />
+    <input type="hidden" name="productId" id="productType" value="LOAN_REQUEST" />
+    <input type="hidden" name="productId" id="productCategory" value="R01" />
+
+    <input type="hidden" name="productId" id="coinSize" value="0" />
+    <input type="hidden" name="productId" id="totalAmount" value="6269.25" />
+
+    <input type="hidden" name="productCoinSwitch" id="productCoinSwitch" value="" />
+    <input type="hidden" name="maxCoinUseAmount" id="maxCoinUseAmount" value="0" />
+
+    <input type="hidden" name="balanceAmount" id="balanceAmount" value="7017.87" />
+    <input type="hidden" name="paymentMethod" id="paymentMethod" value="1" />
+    <input type="hidden" name="supportPayMethods" id="supportPayMethods" value="1">
+    <input type="hidden" name="ifSetPassword" id="ifSetPassword" value="1" />
+
+    <input type="hidden" name="luWalletTotalAmount" id="luWalletTotalAmount" value="">
+    <input type="hidden" name="luWalletLimitAmount" id="luWalletLimitAmount" value="">
+
+    <input type="hidden" id="yebTotalAmount" value="1982.15">
+    <input type="hidden" id="yebLimitAmount" value="5000000">
+    <input type="hidden" id="yebCanPay" value="1982.15">
 
     <div class="main-wrap">
 
@@ -169,14 +169,14 @@
                 <p class="progressLine">&nbsp;</p>
             </li>
 
-            <li class="steps active">
+            <li class="steps finish">
                 <div class="stepContent">
                     <p class="stepTitle"> 确认合同</p>
                     <p class="stepNum">2</p>
                 </div>
                 <p class="progressLine">&nbsp;</p>
             </li>
-            <li class="steps ">
+            <li class="steps active">
                 <div class="stepContent">
                     <p class="stepTitle">支付确认</p>
                     <p class="stepNum">3</p>
@@ -190,93 +190,150 @@
                 </div>
             </li>
         </ul>
-        <div id="stepContent">
+        <div class="tab-body">
+            <div class="pay">
+                <div class="lucoin_wrap">
+                    <div class="lucoin_list lucoinList-hidden">
+                        <div class="tit">
+                            <a href="http://www.lu.com/help/help_issue_freshman_answer_34.html" target="_blank">了解使用详情</a>
+                            <span class="tab_lucoin ">
+                                                                        <i class=""></i>
+                                                            使用投资券抵扣
+             </span>
 
-            <div id="contract-container" class="agreementWarp"></div>
+                        </div>
 
-            <textarea id="template-contract" class="hidden">
-    <p class="agreementTotal">共有<span class="contractNum">${model.length}</span>份协议需要您<span>阅读并同意</span>:</p>
-    {for contract in model}
-        <div class="consentTitle">
-            <p class="title">${contract.contractName}</p>
-        </div>
-        <div class="agreementContent">
-            <div class="scroll_content_wrap riskDisclaimersContent">${contract.contractContent}</div>
-        </div>
-    {/for}
-            <div class="agreeInvestFa clearfix">
-        <div class="disclaimer clearfix">
-            <h3>平台免责声明</h3>
-            <p>
-                                陆金所作为交易服务平台进行信息发布，不对任何投资人及/或任何交易提供任何担保，无论是明示、默示或法定的。陆金所平台提供的各种信息及资料仅供参考，投资人应依其独立判断做出决策。投资人据此进行投资交易的，产生的投资风险由投资人自行承担，陆金所不承担任何责任。
-                            </p>
-        </div>
-        <p class="agree-label">
-            <input type="checkbox" data-sk="options_R01" name="agreeInvest" id="contractAgree"/>
-            <label for="contractAgree" id="contract-agree-text"></label>
-        </p>
-    </div>
-    <p class="nextStep">
-        <a id="nextBtn" href="javascript:void(0);" data-sk="next_contract_R01" class="btns btn_large disabled">下一步</a>
-    </p>
-    <form id="brand-form" method="post" action="/trading/open-account-error">
-        <input id="instId" value="" name="instId" type="hidden"/>
-    </form>
-</textarea>
-        </div>
-    </div>
-
-    <div id="kycOtpModal" class="hidden kyc-modal">
-        <div class="modal-dialog" lufax-ui="popup">
-            <div class="modal-content" style="width: 526px">
-                <div class="modal-header clearfix">
-                    <div class="close">
-                        <a class="modal-close" href="javascript:void(0);"></a>
-                    </div>
-                    <h4 class="modal-title"><span class="prompt-popup-icon iconV2"></span>重要提示</h4>
-                </div>
-                <div class="modal-body">
-                    <div class="message form-horizontal">
-                        <p>本产品安全等级参考为<span class="riskLevelPop"></span><a target="_blank" href="http://www.lu.com/help/help_issue_risk.html">[?]</a>，为保证您已阅读并悉知风险提示、合同文件等内容，陆金所需要与您进行短信验证。</p>
-                        <p class="agree-label">
-                            <input type="checkbox" id="kycConfirmCB" />
-                            <label for="kycConfirmCB">本人已阅读风险提示和合同条款，并已知悉产品风险，愿意继续购买本产品。</label>
-                        </p>
-                        <div class="kyc-otp-container">
-                            <div id="kycOpt"></div>
-                            <div class="btn-container">
-                                <a class="btns btn_info" data-sk="Confirm_SMS" id="kycOtpConfirm" href="javascript:void(0);">确定</a>
+                        <div class="lucoin_status hidden ">
+                            <dl class="list_main">
+                                <dt>
+                        <span class="coupon">投资券</span>
+                        <span class="rule">使用规则</span>
+                        <span class="validity">到期时间</span>
+                    </dt>
+                            </dl>
+                            <div class="no_lucoin">
+                                <i class="iconV2 prompt-icon"></i>您当前没有可使用的投资券
                             </div>
                         </div>
 
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="kycCallModal" class="hidden kyc-modal">
-        <div class="modal-dialog" lufax-ui="popup">
-            <div class="modal-content" style="width: 526px">
-                <div class="modal-header clearfix">
-                    <div class="close">
-                        <a class="modal-close" href="javascript:void(0);"></a>
+                    <input type="hidden" id="avaliableCanUse" value="">
+                    <div class="count">
+                        实付总额： <strong id="payAmount" class="payment payAmount">6,269.25</strong> 元
+                        <span class="count-explain lucoinList-hidden ">
+                    （ 投资金额：
+                                    <strong id="total">6,269.25</strong> 元
+                        – 抵扣金额：<strong class="avaliableAmount">0.00</strong> 元）
+                            </span>
                     </div>
-                    <h4 class="modal-title"><span class="icon-exclamation sprite-detail"></span>重要提示</h4>
                 </div>
-                <p class="extra-msg">本产品安全等级参考为<span class="riskLevelPop"></span><a target="_blank" href="http://www.lu.com/help/help_issue_risk.html">[?]</a>，为保证您已阅读并知悉风险提示、合同文件等内容，陆金所需要与您进行电话确认，确认后才能继续投资。</p>
-
-                <div class="modal-body">
-                    <div class="message form-horizontal">
-                        <div class="btn-container">
-                            <a class="btns btn_info confirmBtn" data-sk="ContactMe_Tel" href="javascript:void(0);">请客服联系我</a>
+                <div class="payment-wrapper">
+                    <div class="payment-balance">
+                        <div class="payment-amount">
+                            <p class="payment-balance-lack ">
+                                <span class="trading-sprite icon-error"></span>余额不足，请先
+                                <a href="https://cashier.lu.com/cashier/recharge?amount=-748.62&productId=145724041">充值</a>
+                            </p>
+                            <p class="payment-balance-enough is-show ">
+                                支付： <span class="num-style" id="balance-pay">
+                                    6,269.25
+                                </span> 元
+                            </p>
                         </div>
-                        <p class="is-grey">您也可主动拨打<span class="is-dark">客服电话400 866 6618(人工服务 8:00-22:00)</span>完成确认。</p>
+                        <p>账户余额支付（可用余额：
+                            <span class="num-style">7,017.87</span> 元）
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
+        <div id="password-container">
+            <div class="securityValid_box">
+                <div class="securityValid">
+                    <form class="form-horizontal">
+                        <div class="control-group tradeCodeWrap">
+                            <label class="control-label" for="tradeCode">交易密码：</label>
+
+                            <div class="controls">
+                                <span class="input-wrap">
+                            <input type="password" id="tradeCode" placeholder="" tabindex="5"
+                                   class="inputs input-medium tradeCode analyze-tradeCode" data-label="交易密码"/>
+                        </span>
+                                <a href="https://user.lu.com/user/find-trade-password" class="findPwd" target="_blank">忘记密码？</a>
+                                <span class="errorPanel hidden">
+                            <b class="arrow left"> </b>
+                            <span class="errorContent"></span>
+                                </span>
+                                <span class="help-line hidden" id="pwd-tip">交易密码不等于登录密码和银行卡密码</span>
+                            </div>
+                            <div id="kb"></div>
+
+                        </div>
+                        <div class="control-group validNumWrap">
+                            <label class="control-label" for="inputValid">验证码：</label>
+
+                            <div class="controls">
+                                <span class="input-wrap">
+                            <input type="text" id="inputValid" placeholder="" tabindex="6" class="inputs input-small inputValid"
+                                   maxlength="4" name="inputValid" data-label="验证码"/>
+                                <i class="icon validIcon" id="captchaIcon"></i>
+                                </span>
+
+                                <img alt="" src="" data-resource-uri="https://user.lu.com/user/captcha/get-captcha?source=1" data-image-id="" class="validNum">
+                                <a class="changeValidNum" href="javascript:void(0)">换一张</a>
+                                <span class="errorPanel hidden">
+                                <b class="arrow left"> </b>
+                                <span class="errorContent"></span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label"></label>
+                            <div class="controls">
+                                <a class="btns btn_large validBtn" data-sk="payment_145724041" id="validBtn" href="javascript:void(0)"> 提交并支付 </a>
+                                <span class="errorPanel hidden">
+                        <span class="errorContent"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <form id="result" action="result-info?from=" method="post">
+            <input type="hidden" id="productId" name="productId" value="145724041" />
+            <input type="hidden" name="sid" id="sid" value="277556036" />
+            <input type="hidden" id="uid" name="uid" value="28160626" />
+            <input id="resultCode" type="hidden" name="resultCode" />
+            <input id="investmentRequestId" type="hidden" name="investmentRequestId" />
+            <input id="trxId" type=hidden name="trxId" />
+            <input id="rechargeAmount" type="hidden" name="rechargeAmount" />
+            <input id="riskLevelDesc" type="hidden" name="riskLevelDesc" />
+            <input id="productRiskLevelDesc" type="hidden" name="productRiskLevelDesc" />
+            <input id="needWithholding" type="hidden" name="needWithholding" />
+            <input id="withholdingAmount" type="hidden" name="withholdingAmount" />
+            <input type="hidden" name="isInvestWalletBefore" id="isInvestWalletBefore" value="" />
+            <input type="hidden" name="paymentMethod" value="1" />
+            <input type="hidden" name="applyPolicyNoString" value="" />
+            <input type="hidden" name="insuranceType" value="" />
+            <input id="targetProductId" type="hidden" name="targetProductId" value="" />
+            <input id="buyType" name="buyType" type="hidden" value="">
+        </form>
+        <form id="recharge-contract" method="post" target="_blank" action="https://cashier.lu.com/cashier/recharge/showContract">
+            <input id=amountInContract type="hidden" name="amount" value="-748.62" />
+            <input name="username" type="hidden" value="" />
+            <input name="bankAccount" type="hidden" value="" />
+            <input name="actualname" type="hidden" value="" />
+            <input name="idOnly" type="hidden" value="" />
+            <input name="idType" type="hidden" value="" />
+            <input type="hidden" id="bankCodeName" name="bankCodeName" value="">
+            <input id="recharge-date" type="hidden" name="rechargeDate" value="">
+        </form>
+        <script type="text/javascript" src="https://static.lufaxcdn.com/user/js/base/unionrsa.js"></script>
     </div>
+
     <div id="lufax-footer" class="lufax-footer simple-foot clearfix">
         <div class="footer clearfix">
             <div class="contactbox">
@@ -307,7 +364,7 @@
 
     <script type="text/javascript" src="https://static.lufaxcdn.com/trading/resource/require/require_config.ca719220.js"></script>
 
-    <script type="text/javascript" src="https://static.lufaxcdn.com/trading/resource/contract/main/common.0a5bf53d.js"></script>
+    <script type="text/javascript" src="https://static.lufaxcdn.com/trading/resource/securityValid/main/securityValid.3edeb4a6.js"></script>
 
     <script type="text/javascript" src="//static.lufaxcdn.com/lufax-public/statistic/statistic.9a599d27.js"></script>
     <!-- put int <head> tag-->
