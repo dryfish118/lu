@@ -274,7 +274,7 @@ function injectContractPage() {
 
     g_nextUrl = url_security;
     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
-        chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
+        chrome.tabs.executeScript(g_tab.id, { file: "inject.js", runAt: "document_idle" }, function() {
             chrome.tabs.sendMessage(g_tab.id, { message: "contract" });
         });
     });
@@ -579,4 +579,14 @@ chrome.browserAction.onClicked.addListener(function() {
         g_terminate = false;
         startWork();
     }
+
+
+    // chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+    //     g_tab = tabs[0];
+    //     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
+    //         chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
+    //             chrome.tabs.sendMessage(g_tab.id, { message: "test" });
+    //         });
+    //     });
+    // });
 });

@@ -209,11 +209,21 @@ function parseContractPage() {
         $("#btnconfirm").trigger("click");
     });
 
-    console.log("move to show");
-    window.location.hash = "#contractAgree";
+    var h = document.body.scrollHeight;
 
-    console.log("click #contractAgree");
-    $("#contractAgree").trigger("click");
+    $(window).scroll(function(e) {
+        if (!$('#contractAgree').prop('checked')) {
+            console.log("current scroll (h:%d) %d %d %d", h, $(this).scrollTop(), $(this).height(), $(this).scrollTop() + $(this).height());
+            if ($(this).scrollTop() + $(this).height() >= h) {
+                console.log("click #contractAgree");
+                $("#contractAgree").trigger("click");
+            }
+        }
+    });
+
+    console.log("move to bottom %d", h);
+    $(window).scrollTop(h);
+    //window.scrollTo(0, h);
 }
 
 function parseSecurityPage(pass) {
@@ -249,5 +259,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         parseContractPage();
     } else if (request.message === "security") {
         parseSecurityPage(request.pass);
+    } else if (request.message === "test") {
+        parseContractPage();
     }
 });
