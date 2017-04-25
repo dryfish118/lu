@@ -192,38 +192,59 @@ function parseTradePage() {
 
 function parseContractPage() {
     console.log("parseContractPage");
+
+    var counts = 0;
+
     $("body").bind("DOMNodeInserted", function(e) {
-        //console.log("DOMNodeInserted");
-        var obj = jQuery(e.target);
-        if (obj.hasClass("blockPage")) {
-            $("body").unbind("DOMNodeInserted");
-            console.log("blockPage");
-            chrome.runtime.sendMessage({ message: "contract", param1: "No" });
-        }
-    });
+        var name = e.target.tagName + e.target.id;
+        console.log("DOMNodeInserted %s", name);
+        if (name === "SPANcontract-names") {
+            counts++;
+            if (counts === 2) {
+                var h = document.body.scrollHeight;
 
-    $("#contractAgree").change(function() {
-        var confirm = $("#nextBtn").first();
-        $(confirm).html("<span id='btnconfirm'>" + $(confirm).html() + "</span>");
-        console.log("trigger nextBtn");
-        $("#btnconfirm").trigger("click");
-    });
+                $("#contractAgree").change(function() {
+                    console.log("contractAgree change");
+                    if ($('#contractAgree').prop('checked')) {
+                        var confirm = $("#nextBtn").first();
+                        $(confirm).html("<span id='btnconfirm'>" + $(confirm).html() + "</span>");
+                        console.log("trigger nextBtn");
+                        $("#btnconfirm").trigger("click");
+                    }
+                });
 
-    var h = document.body.scrollHeight;
+                // $("#contractAgree").click(function() {
+                //     console.log("contractAgree click");
+                //     if ($('#contractAgree').prop('checked')) {
+                //         var confirm = $("#nextBtn").first();
+                //         $(confirm).html("<span id='btnconfirm'>" + $(confirm).html() + "</span>");
+                //         console.log("trigger nextBtn");
+                //         $("#btnconfirm").trigger("click");
+                //     }
+                // });
 
-    $(window).scroll(function(e) {
-        if (!$('#contractAgree').prop('checked')) {
-            console.log("current scroll (h:%d) %d %d %d", h, $(this).scrollTop(), $(this).height(), $(this).scrollTop() + $(this).height());
-            if ($(this).scrollTop() + $(this).height() >= h) {
-                console.log("click #contractAgree");
-                $("#contractAgree").trigger("click");
+                $(window).scroll(function(e) {
+                    if (!$('#contractAgree').prop('checked')) {
+                        console.log("current scroll (h:%d) %d %d %d", h, $(this).scrollTop(), $(this).height(), $(this).scrollTop() + $(this).height());
+                        if ($(this).scrollTop() + $(this).height() >= h) {
+                            console.log("click #contractAgree");
+                            $("#contractAgree").trigger("click");
+                        }
+                    }
+                });
+
+                console.log("move to bottom %d", h);
+                $(window).scrollTop(h);
+            }
+        } else {
+            var obj = jQuery(e.target);
+            if (obj.hasClass("blockPage")) {
+                $("body").unbind("DOMNodeInserted");
+                console.log("blockPage");
+                chrome.runtime.sendMessage({ message: "contract", param1: "No" });
             }
         }
     });
-
-    console.log("move to bottom %d", h);
-    $(window).scrollTop(h);
-    //window.scrollTo(0, h);
 }
 
 function parseSecurityPage(pass) {

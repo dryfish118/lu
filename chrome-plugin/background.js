@@ -230,12 +230,6 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
                     injectSecurity();
                     break;
                 }
-            case WorkFlow.WorkFlow_InjectSecurity:
-                {
-                    g_workFlow = WorkFlow.WorkFlow_Idle;
-                    console.log("WorkFlow_Idle");
-                    break;
-                }
         }
     } else if (g_workFlow === WorkFlow.WorkFlow_InjectLogin && isUrlMatch(url_login, details.url)) {
         console.log("failed to login, try again.");
@@ -259,6 +253,8 @@ function injectSecurity() {
     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
         chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
             chrome.tabs.sendMessage(g_tab.id, { message: "security", pass: getTradePass() });
+            g_workFlow = WorkFlow.WorkFlow_Idle;
+            console.log("WorkFlow_Idle");
         });
     });
 }
@@ -273,8 +269,8 @@ function injectContractPage() {
     console.log("WorkFlow_InjectContract");
 
     g_nextUrl = url_security;
-    chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
-        chrome.tabs.executeScript(g_tab.id, { file: "inject.js", runAt: "document_idle" }, function() {
+    chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js", runAt: "document_end" }, function() {
+        chrome.tabs.executeScript(g_tab.id, { file: "inject.js", runAt: "document_end" }, function() {
             chrome.tabs.sendMessage(g_tab.id, { message: "contract" });
         });
     });
