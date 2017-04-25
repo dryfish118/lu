@@ -1,0 +1,17 @@
+{
+    "manifest_version": 2,
+    "name": "抢京东",
+    "version": "0.0.1",
+    "description": "抢京东",
+    "permissions": [
+        "tabs", "webNavigation", "https://*.jd.com/*"
+    ],
+    "background": {
+        "scripts": ["jquery.min.js", "background.js"],
+        "persistent": false
+    },
+    "browser_action": {
+        "default_icon": "lu.png",
+        "default_title": "抢京东"
+    }
+}
