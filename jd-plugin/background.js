@@ -1,5 +1,5 @@
-var url_qiang = "https://sale.jd.com/act/4dhmwvu6rpc.html?cpdad=1DLSUE";
-var count = 20;
+var url_qiang = "https://pro.m.jd.com/mall/active/CFoVuLtk8ykyG5f59EfdpQyhcmM/index.html";
+var g_count = 20;
 
 function isUrlMatch(url1, url2) {
     if (url1 !== undefined && url2 !== undefined) {
@@ -12,21 +12,26 @@ function isUrlMatch(url1, url2) {
 
 chrome.webNavigation.onCompleted.addListener(function(details) {
     if (isUrlMatch(url_qiang, details.url)) {
-        console.log("opened");
-        chrome.tabs.executeScript(details.tabid, { file: "jquery.min.js" }, function() {
-            chrome.tabs.executeScript(details.tabid, { file: "inject.js" }, function() {
-                chrome.tabs.sendMessage(details.tabid, { message: "qiang", timeout: --count });
-                console.log("injected");
-                if (count > 0) {
-                    console.log("create new");
-                    chrome.tabs.create({ url: url_qiang });
-                }
+        var id = details.tabId;
+        console.log("opened in tab %d", id);
+        chrome.tabs.executeScript(id, { file: "jquery.min.js" }, function() {
+            console.log("jquery.min.js in tab %d", id);
+            chrome.tabs.executeScript(id, { file: "inject.js" }, function() {
+                console.log("inject.js in tab %d", id);
+                chrome.tabs.sendMessage(id, { message: "qiang", timeout: g_count }, null, function(response) {
+                    console.log("injected %d in tab %d", g_count, id);
+                    if (--g_count > 0) {
+                        console.log("create new");
+                        chrome.tabs.create({ url: url_qiang });
+                    }
+                });
             });
         });
     }
 });
 
 chrome.browserAction.onClicked.addListener(function() {
-    count = 20;
+    console.log("start");
+    g_count = 20;
     chrome.tabs.create({ url: url_qiang });
 });

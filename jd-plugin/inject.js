@@ -2,9 +2,9 @@ console.log("inject.js injected.");
 
 function qiang() {
     console.log("qiang");
-    var confirm = $(".mks_03 a").first();
-    console.log("html: (%s)", $(confirm).html());
-    $(confirm).html("<span id='btnconfirm'>" + $(confirm).html() + "</span>");
+
+    var a = $("a[data-pos='27,15,528,249']").first();
+    $(a).html("<span id='btnconfirm'>点我</span>");
     $("#btnconfirm").trigger("click");
 }
 
