@@ -388,9 +388,8 @@ function acquireMaxrate(result, rate) {
         var minRate = getMinRate();
         var stepRate = getStepRate();
         if (minRate !== 0 && rate < minRate) {
-            console.log("current max rate(%s) is lower than the min rate(%s)", rate.toFixed(2), minRate.toFixed(2));
-            g_workFlow = WorkFlow.WorkFlow_Idle;
-            console.log("WorkFlow_Idle");
+            console.log("current max rate(%s) is lower than the min rate(%s), refresh & restart after %d\".", rate.toFixed(2), minRate.toFixed(2), getRefresh() / 1000);
+            setTimeout(openMaxRatePage, getRefresh());
         } else {
             g_rate = rate - stepRate;
             if (minRate !== 0 && g_rate < minRate) {
@@ -417,6 +416,14 @@ function injectMaxRatePage() {
             chrome.tabs.sendMessage(g_tab.id, { message: "maxrate" });
         });
     });
+}
+
+function openMaxRatePage() {
+    g_workFlow = WorkFlow.WorkFlow_OpenMaxRatePage;
+    console.log("WorkFlow_OpenMaxRatePage");
+    g_nextUrl = url_r030;
+    var strUrl = url_r030 + "?currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false";
+    chrome.tabs.update(g_tab.id, { url: strUrl });
 }
 
 function acquireAccount(result, money) {
@@ -456,11 +463,7 @@ function acquireAccount(result, money) {
             g_fromMoney = g_toMoney - getStepMoney();
         }
 
-        g_workFlow = WorkFlow.WorkFlow_OpenMaxRatePage;
-        console.log("WorkFlow_OpenMaxRatePage");
-        g_nextUrl = url_r030;
-        var strUrl = url_r030 + "?currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false";
-        chrome.tabs.update(g_tab.id, { url: strUrl });
+        openMaxRatePage();
     }
 }
 
