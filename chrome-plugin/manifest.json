@@ -4,7 +4,7 @@
     "version": "0.0.1",
     "description": "Help to catch the best investment production in LU.",
     "permissions": [
-        "storage", "tabs", "webNavigation", "https://*.lu.com/*"
+        "storage", "tabs", "webNavigation", "notifications", "https://*.lu.com/*"
     ],
     "icons": { "16": "lu.png", "48": "lu.png", "128": "lu.png" },
     "options_page": "options.html",
