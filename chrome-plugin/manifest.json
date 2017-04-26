@@ -2,10 +2,11 @@
     "manifest_version": 2,
     "name": "Lu Trade Helper",
     "version": "0.0.1",
-    "description": "Help to get the best investment production.",
+    "description": "Help to catch the best investment production in LU.",
     "permissions": [
-        "storage", "tabs", "webNavigation", "http://*/*", "https://*.lu.com/*"
+        "storage", "tabs", "webNavigation", "https://*.lu.com/*"
     ],
+    "icons": { "16": "lu.png", "48": "lu.png", "128": "lu.png" },
     "options_page": "options.html",
     "background": {
         "scripts": ["jquery.min.js", "background.js"],
