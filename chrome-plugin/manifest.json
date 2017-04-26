@@ -15,10 +15,4 @@
         "default_icon": "lu.png",
         "default_title": "Lu Trade Helper"
     }
-    // ,
-    // "content_scripts": [{
-    //     "matches": ["https://*.lu.com/*"],
-    //     "js": ["jquery.min.js", "content.js"],
-    //     "run_at": "document_end"
-    // }]
 }

@@ -22,9 +22,6 @@ function loadConfig() {
                                     $("#stepmoney").val(response);
                                     chrome.runtime.sendMessage({ message: "get", param1: "minrate" }, function(response) {
                                         $("#minrate").val(response);
-                                        chrome.runtime.sendMessage({ message: "get", param1: "steprate" }, function(response) {
-                                            $("#steprate").val(response);
-                                        });
                                     });
                                 });
                             });
@@ -47,9 +44,7 @@ $("#submit").click(function() {
                         chrome.runtime.sendMessage({ message: "set", param1: "maxmoney", param2: $("#maxmoney").val() }, function() {
                             chrome.runtime.sendMessage({ message: "set", param1: "minmoney", param2: $("#minmoney").val() }, function() {
                                 chrome.runtime.sendMessage({ message: "set", param1: "stepmoney", param2: $("#stepmoney").val() }, function() {
-                                    chrome.runtime.sendMessage({ message: "set", param1: "minrate", param2: $("#minrate").val() }, function() {
-                                        chrome.runtime.sendMessage({ message: "set", param1: "steprate", param2: $("#steprate").val() });
-                                    });
+                                    chrome.runtime.sendMessage({ message: "set", param1: "minrate", param2: $("#minrate").val() });
                                 });
                             });
                         });

@@ -56,21 +56,6 @@ function parseAccountPage() {
     }
 }
 
-function parseMaxratePage() {
-    console.log("parseMaxratePage");
-    var product = $(".product-list").get(0);
-    if (product === undefined) {
-        chrome.runtime.sendMessage({ message: "maxrate", param1: "No" });
-    } else {
-        var rate = $(product).find(".interest-rate .num-style").get(0);
-        if (rate === undefined) {
-            chrome.runtime.sendMessage({ message: "maxrate", param1: "No" });
-        } else {
-            chrome.runtime.sendMessage({ message: "maxrate", param1: "Yes", param2: parseFloat($(rate).text()) });
-        }
-    }
-}
-
 var LuProduct = {
     createProduct: function() {
         var product = {};
@@ -82,13 +67,13 @@ var LuProduct = {
     }
 };
 
-function parseProductListPage(validRate) {
+function parseProductListPage(minRate) {
     console.log("parseProductListPage");
     var productList = $(".product-list");
     if (productList === undefined || productList.length === 0) {
         chrome.runtime.sendMessage({ message: "productlist", param1: "No" });
     } else {
-        console.log("the valid rate is %s", validRate.toFixed(2));
+        console.log("the valid rate is %s", minRate.toFixed(2));
         var products = [];
         productList.each(function() {
             var product = LuProduct.createProduct();
@@ -101,7 +86,7 @@ function parseProductListPage(validRate) {
                         //console.log("the product rate is %s", $(rate).text());
                         product.rate = parseFloat($(rate).text());
                         //console.log("the product rate is %s", product.rate.toFixed(2));
-                        if (parseInt(product.rate * 100) >= parseInt(validRate * 100)) {
+                        if (parseInt(product.rate * 100) >= parseInt(minRate * 100)) {
                             var name = $(this).find(".product-name").get(0);
                             if (name !== undefined) {
                                 a = $(name).find("a");
@@ -268,10 +253,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         parseLoginPage();
     } else if (request.message === "account") {
         parseAccountPage();
-    } else if (request.message === "maxrate") {
-        parseMaxratePage();
     } else if (request.message === "productlist") {
-        parseProductListPage(parseFloat(request.maxrate));
+        parseProductListPage(parseFloat(request.rate));
     } else if (request.message === "product") {
         parseProductPage();
     } else if (request.message === "trade") {

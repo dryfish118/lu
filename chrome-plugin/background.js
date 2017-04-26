@@ -7,16 +7,13 @@ var WorkFlow = {
     WorkFlow_OpenAccountPage: 6, // 打开基金页面
     WorkFlow_InjectAccount: 7, // 嵌入基金代码
     WorkFlow_AcquireAccount: 8, // 获取用户可用金额
-    WorkFlow_OpenMaxRatePage: 9, // 以利率最大排序取产品列表
-    WorkFlow_InjectMaxRate: 10, // 嵌入获取利率代码
-    WorkFlow_AcquireMaxRate: 11, // 获得当前最大利率
-    WorkFlow_OpenProductListPage: 12, // 取资金内利率最大的产品列表
-    WorkFlow_InjectProductList: 13, // 嵌入产品
-    WorkFlow_OpenProductPage: 14, // 打开产品页面
-    WorkFlow_InjectProduct: 15, // 产品
-    WorkFlow_InjectTrade: 16, // 交易
-    WorkFlow_InjectContract: 17, // 合同
-    WorkFlow_InjectSecurity: 18, // 密码
+    WorkFlow_OpenProductListPage: 9, // 取资金内利率最大的产品列表
+    WorkFlow_InjectProductList: 10, // 嵌入产品
+    WorkFlow_OpenProductPage: 11, // 打开产品页面
+    WorkFlow_InjectProduct: 12, // 产品
+    WorkFlow_InjectTrade: 13, // 交易
+    WorkFlow_InjectContract: 14, // 合同
+    WorkFlow_InjectSecurity: 15, // 密码
 };
 
 var g_workFlow = WorkFlow.WorkFlow_Idle;
@@ -115,14 +112,6 @@ function getMinRate() {
     }
 }
 
-function getStepRate() {
-    if (localStorage.steprate === undefined || localStorage.steprate === "") {
-        return 0.02;
-    } else {
-        return parseFloat(localStorage.steprate);
-    }
-}
-
 chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
     var message = request.message;
     var param1 = request.param1;
@@ -146,10 +135,6 @@ chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
             sendResponse(getStepMoney());
         } else if (param1 === "minrate") {
             sendResponse(getMinRate());
-        } else if (param1 === "steprate") {
-            sendResponse(getStepRate());
-        } else if (param1 === "validrate") {
-            sendResponse(g_rate);
         }
     } else if (message === "set") {
         localStorage[param1] = param2;
@@ -157,8 +142,6 @@ chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
         console.log(param1);
     } else if (message === "account") {
         acquireAccount(param1, param2);
-    } else if (message === "maxrate") {
-        acquireMaxrate(param1, param2);
     } else if (message === "productlist") {
         acquireProductList(param1, param2);
     } else if (message === "product" || message === "trade" ||
@@ -198,11 +181,6 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
             case WorkFlow.WorkFlow_OpenAccountPage:
                 {
                     injectAccountPage();
-                    break;
-                }
-            case WorkFlow.WorkFlow_OpenMaxRatePage:
-                {
-                    injectMaxRatePage();
                     break;
                 }
             case WorkFlow.WorkFlow_OpenProductListPage:
@@ -269,8 +247,8 @@ function injectContractPage() {
     console.log("WorkFlow_InjectContract");
 
     g_nextUrl = url_security;
-    chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js", runAt: "document_end" }, function() {
-        chrome.tabs.executeScript(g_tab.id, { file: "inject.js", runAt: "document_end" }, function() {
+    chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
+        chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
             chrome.tabs.sendMessage(g_tab.id, { message: "contract" });
         });
     });
@@ -352,7 +330,7 @@ function injectProductListPage() {
 
     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
         chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
-            chrome.tabs.sendMessage(g_tab.id, { message: "productlist", maxrate: g_rate });
+            chrome.tabs.sendMessage(g_tab.id, { message: "productlist", rate: g_rate });
         });
     });
 }
@@ -369,61 +347,6 @@ function openProductListPage() {
     g_nextUrl = url_r030;
     var strData = "?currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false&minMoney=" + g_fromMoney + "&maxMoney=" + g_toMoney;
     chrome.tabs.update(g_tab.id, { url: g_nextUrl + strData });
-}
-
-function acquireMaxrate(result, rate) {
-    if (g_terminate) {
-        g_terminate = false;
-        return;
-    }
-
-    g_workFlow = WorkFlow.WorkFlow_AcquireMaxRate;
-    console.log("WorkFlow_AcquireMaxRate");
-
-    if (result === "No") {
-        console.log("failed to acquire the max rate.");
-        g_workFlow = WorkFlow.WorkFlow_Idle;
-        console.log("WorkFlow_Idle");
-    } else {
-        var minRate = getMinRate();
-        var stepRate = getStepRate();
-        if (minRate !== 0 && rate < minRate) {
-            console.log("current max rate(%s) is lower than the min rate(%s), refresh & restart after %d\".", rate.toFixed(2), minRate.toFixed(2), getRefresh() / 1000);
-            setTimeout(openMaxRatePage, getRefresh());
-        } else {
-            g_rate = rate - stepRate;
-            if (minRate !== 0 && g_rate < minRate) {
-                g_rate = minRate;
-            }
-            console.log("the current max rate:\t%s", g_rate.toFixed(2));
-
-            openProductListPage();
-        }
-    }
-}
-
-function injectMaxRatePage() {
-    if (g_terminate) {
-        g_terminate = false;
-        return;
-    }
-
-    g_workFlow = WorkFlow.WorkFlow_InjectMaxRate;
-    console.log("WorkFlow_InjectMaxRate");
-
-    chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
-        chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
-            chrome.tabs.sendMessage(g_tab.id, { message: "maxrate" });
-        });
-    });
-}
-
-function openMaxRatePage() {
-    g_workFlow = WorkFlow.WorkFlow_OpenMaxRatePage;
-    console.log("WorkFlow_OpenMaxRatePage");
-    g_nextUrl = url_r030;
-    var strUrl = url_r030 + "?currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false";
-    chrome.tabs.update(g_tab.id, { url: strUrl });
 }
 
 function acquireAccount(result, money) {
@@ -463,7 +386,10 @@ function acquireAccount(result, money) {
             g_fromMoney = g_toMoney - getStepMoney();
         }
 
-        openMaxRatePage();
+        g_rate = getMinRate();
+        console.log("the current max rate:\t%s", g_rate.toFixed(2));
+
+        openProductListPage();
     }
 }
 
