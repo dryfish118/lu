@@ -69,6 +69,11 @@ var LuProduct = {
 
 function parseProductListPage(minRate) {
     console.log("parseProductListPage");
+    var lg = $("#top-login");
+    if (lg === undefined || $(lg).hasClass("hidden")) {
+        chrome.runtime.sendMessage({ message: "productlist", param1: "login" });
+        return;
+    }
     var productList = $(".product-list");
     if (productList === undefined || productList.length === 0) {
         chrome.runtime.sendMessage({ message: "productlist", param1: "No" });

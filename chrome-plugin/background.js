@@ -306,9 +306,11 @@ function acquireProductList(result, urls) {
         return;
     }
 
-    if (result == "No") {
+    if (result === "No") {
         console.log("failed to acquire the productlist, refresh & restart after %d\".", getRefresh() / 1000);
         setTimeout(openProductListPage, getRefresh());
+    } else if (result === "login") {
+        startWork();
     } else {
         g_workFlow = WorkFlow.WorkFlow_OpenProductPage;
         console.log("WorkFlow_OpenProductPage");
