@@ -359,7 +359,7 @@ function openProductListPage() {
     console.log("WorkFlow_OpenProductListPage (%s%% %d %d)", g_rate.toFixed(2), g_fromMoney, g_toMoney);
 
     g_nextUrl = url_r030;
-    var strData = "?currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false&minMoney=" + g_fromMoney + "&maxMoney=" + g_toMoney;
+    var strData = "?currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false&minMoney=" + g_fromMoney + "&maxMoney=" + g_toMoney + "&minRate=" + (g_rate / 100);
     chrome.tabs.update(g_tab.id, { url: g_nextUrl + strData });
 }
 
