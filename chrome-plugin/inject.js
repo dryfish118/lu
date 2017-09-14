@@ -2,34 +2,34 @@ function sendLog(msg) {
     chrome.runtime.sendMessage({ message: "log", param1: msg });
 }
 
-console.log("inject.js injected.");
+sendLog("inject.js injected.");
 
 function parseLoginPage() {
-    console.log("parseAccountPage");
+    sendLog("parseLoginPage");
     chrome.runtime.sendMessage({ message: "get", param1: "telephone" }, function(response) {
         var telephone = response;
-        console.log("aquire telephone: " + telephone);
+        sendLog("aquire telephone: " + telephone);
         if (telephone === "") {
-            console.log("login by username");
+            sendLog("login by username");
             $("div[data-role=userName]").trigger("click");
             chrome.runtime.sendMessage({ message: "get", param1: "username" }, function(response) {
                 var username = response;
-                console.log("aquire username: " + username);
+                sendLog("aquire username: " + username);
                 $("#userNameLogin").val(username);
                 chrome.runtime.sendMessage({ message: "get", param1: "userpass" }, function(response) {
                     var pass = response;
-                    console.log("aquire password ");
+                    sendLog("aquire password ");
                     $("#pwd").val(pass);
                     $("#loginFlagnew").trigger("click");
                 });
             });
         } else {
             $("div[data-role=mobile]").trigger("click");
-            console.log("login by telephone");
+            sendLog("login by telephone");
             $("#userNameLogin").val(telephone);
             chrome.runtime.sendMessage({ message: "get", param1: "userpass" }, function(response) {
                 var pass = response;
-                console.log("acquired password.");
+                sendLog("acquired password.");
                 $("#pwd").val(pass);
                 $("#loginFlagnew").trigger("click");
             });
@@ -38,19 +38,19 @@ function parseLoginPage() {
 }
 
 function parseAccountPage() {
-    console.log("parseAccountPage");
+    sendLog("parseAccountPage");
     var yue = $(".account-balance-item  .coin-point-item-number").get(0);
     if (yue === undefined) {
-        console.log("failed to get yu e.");
+        sendLog("failed to get yu e.");
         chrome.runtime.sendMessage({ message: "account", param1: "No" });
     } else {
         var linghuobao = $(".coin-point-item-lujinbao  .coin-point-item-number").get(0);
         if (linghuobao === undefined) {
-            console.log("failed to get linghuobao.");
+            sendLog("failed to get linghuobao.");
             chrome.runtime.sendMessage({ message: "account", param1: "No" });
         } else {
             var amount = parseFloat($(yue).text().replace(",", "")) + parseFloat($(linghuobao).text().replace(",", ""));
-            console.log("amount found " + amount.toFixed(2));
+            sendLog("amount found " + amount.toFixed(2));
             chrome.runtime.sendMessage({ message: "account", param1: "Yes", param2: amount });
         }
     }
@@ -68,7 +68,7 @@ var LuProduct = {
 };
 
 function parseProductListPage(minRate) {
-    console.log("parseProductListPage");
+    sendLog("parseProductListPage");
     var lg = $("#top-login");
     if (lg === undefined || $(lg).hasClass("hidden")) {
         chrome.runtime.sendMessage({ message: "productlist", param1: "login" });
@@ -78,7 +78,7 @@ function parseProductListPage(minRate) {
     if (productList === undefined || productList.length === 0) {
         chrome.runtime.sendMessage({ message: "productlist", param1: "No" });
     } else {
-        console.log("the valid rate is %s", minRate.toFixed(2));
+        sendLog("the valid rate is %s", minRate.toFixed(2));
         var products = [];
         productList.each(function() {
             var product = LuProduct.createProduct();
@@ -88,9 +88,9 @@ function parseProductListPage(minRate) {
                 if ($(a).attr("data-sk") === "invest_list") {
                     var rate = $(this).find(".interest-rate .num-style").get(0);
                     if (rate !== undefined) {
-                        //console.log("the product rate is %s", $(rate).text());
+                        //sendLog("the product rate is %s", $(rate).text());
                         product.rate = parseFloat($(rate).text());
-                        //console.log("the product rate is %s", product.rate.toFixed(2));
+                        //sendLog("the product rate is %s", product.rate.toFixed(2));
                         if (parseInt(product.rate * 100) >= parseInt(minRate * 100)) {
                             var name = $(this).find(".product-name").get(0);
                             if (name !== undefined) {
@@ -135,24 +135,24 @@ function parseProductListPage(minRate) {
 }
 
 function parseProductPage() {
-    console.log("parseProductPage");
+    sendLog("parseProductPage");
     var done = $("div .done-info");
     if (done !== undefined && $(done).html() !== undefined) {
-        console.log($(done).html());
-        console.log("done");
+        sendLog($(done).html());
+        sendLog("done");
         chrome.runtime.sendMessage({ message: "product", param1: "No" });
     } else {
         $("body").bind("DOMNodeInserted", function(e) {
-            //console.log("DOMNodeInserted");
+            //sendLog("DOMNodeInserted");
             var obj = jQuery(e.target);
             if (obj.hasClass("blockPage")) {
                 $("body").unbind("DOMNodeInserted");
-                console.log("blockPage");
+                sendLog("blockPage");
                 chrome.runtime.sendMessage({ message: "product", param1: "No" });
             }
         });
 
-        console.log("trigger click");
+        sendLog("trigger click");
         var a = $("a[data-sk=lijitouzi]");
         var lijitouzi = a.first();
         $(lijitouzi).html("<span id='lijitouzi'>" + $(lijitouzi).html() + "</span>");
@@ -161,90 +161,49 @@ function parseProductPage() {
 }
 
 function parseTradePage() {
-    console.log("parseTradePage");
+    sendLog("parseTradePage");
     $("body").bind("DOMNodeInserted", function(e) {
-        //console.log("DOMNodeInserted");
+        //sendLog("DOMNodeInserted");
         var obj = jQuery(e.target);
         if (obj.hasClass("blockPage")) {
             $("body").unbind("DOMNodeInserted");
-            console.log("blockPage");
+            sendLog("blockPage");
             chrome.runtime.sendMessage({ message: "trade", param1: "No" });
         }
     });
 
     $(".infoNextBtn span").click(function() {
-        console.log(".infoNextBtn span clicked");
+        sendLog(".infoNextBtn span clicked");
     });
 
-    console.log("click .infoNextBtn span");
+    sendLog("click .infoNextBtn span");
     $(".infoNextBtn span").trigger("click");
 }
 
 function parseContractPage() {
-    console.log("parseContractPage");
+    sendLog("parseContractPage");
 
-    var counts = 0;
-
-    $("body").bind("DOMNodeInserted", function(e) {
-        var name = e.target.tagName + e.target.id;
-        console.log("DOMNodeInserted %s", name);
-        if (name === "SPANcontract-names") {
-            counts++;
-            if (counts === 2) {
-                var h = document.body.scrollHeight;
-
-                $("#contractAgree").change(function() {
-                    console.log("contractAgree change");
-                    if ($('#contractAgree').prop('checked')) {
-                        var confirm = $("#nextBtn").first();
-                        $(confirm).html("<span id='btnconfirm'>" + $(confirm).html() + "</span>");
-                        console.log("trigger nextBtn");
-                        $("#btnconfirm").trigger("click");
-                    }
-                });
-
-                // $("#contractAgree").click(function() {
-                //     console.log("contractAgree click");
-                //     if ($('#contractAgree').prop('checked')) {
-                //         var confirm = $("#nextBtn").first();
-                //         $(confirm).html("<span id='btnconfirm'>" + $(confirm).html() + "</span>");
-                //         console.log("trigger nextBtn");
-                //         $("#btnconfirm").trigger("click");
-                //     }
-                // });
-
-                $(window).scroll(function(e) {
-                    if (!$('#contractAgree').prop('checked')) {
-                        console.log("current scroll (h:%d) %d %d %d", h, $(this).scrollTop(), $(this).height(), $(this).scrollTop() + $(this).height());
-                        if ($(this).scrollTop() + $(this).height() >= h) {
-                            console.log("click #contractAgree");
-                            $("#contractAgree").trigger("click");
-                        }
-                    }
-                });
-
-                console.log("move to bottom %d", h);
-                $(window).scrollTop(h);
-            }
-        } else {
-            var obj = jQuery(e.target);
-            if (obj.hasClass("blockPage")) {
-                $("body").unbind("DOMNodeInserted");
-                console.log("blockPage");
-                chrome.runtime.sendMessage({ message: "contract", param1: "No" });
-            }
+    $("#contractAgree").change(function() {
+        sendLog("contractAgree change");
+        if ($('#contractAgree').prop('checked')) {
+            var confirm = $("#nextBtn").first();
+            $(confirm).html("<span id='btnconfirm'>" + $(confirm).html() + "</span>");
+            sendLog("trigger nextBtn");
+            $("#btnconfirm").trigger("click");
         }
     });
+
+    $("#contractAgree").trigger("click");
 }
 
 function parseSecurityPage(pass) {
-    console.log("parseSecurityPage");
+    sendLog("parseSecurityPage");
     $("body").bind("DOMNodeInserted", function(e) {
-        //console.log("DOMNodeInserted");
+        //sendLog("DOMNodeInserted");
         var obj = jQuery(e.target);
         if (obj.hasClass("blockPage")) {
             $("body").unbind("DOMNodeInserted");
-            console.log("blockPage");
+            sendLog("blockPage");
             chrome.runtime.sendMessage({ message: "contract", param1: "No" });
         }
     });
@@ -253,7 +212,7 @@ function parseSecurityPage(pass) {
 }
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    console.log("Receive message: " + request.message);
+    sendLog("Receive message: " + request.message);
     if (request.message === "login") {
         parseLoginPage();
     } else if (request.message === "account") {

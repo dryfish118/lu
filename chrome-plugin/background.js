@@ -36,9 +36,9 @@ var url_userinfo = "https://user.lu.com/user/service/user/current-user-info-for-
 var url_account = "https://my.lu.com/my/account";
 var url_r030 = "https://list.lu.com/list/r030";
 var url_list = "https://list.lu.com";
-var url_trade = "https://trading.lu.com/trading/trade-info";
-var url_contract = "https://trading.lu.com/trading/contract-info";
-var url_security = "https://trading.lu.com/trading/security-valid";
+var url_trade = "https://trading.lu.com/trading/i-trade-info";
+var url_contract = "https://trading.lu.com/trading/i-contract-info";
+var url_security = "https://trading.lu.com/trading/i-security-valid";
 var url_error = "https://promo.lu.com/transfer/v1/status_error.html";
 
 function getTelephone() {
@@ -518,14 +518,4 @@ chrome.browserAction.onClicked.addListener(function() {
         g_terminate = false;
         startWork();
     }
-
-
-    // chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-    //     g_tab = tabs[0];
-    //     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
-    //         chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
-    //             chrome.tabs.sendMessage(g_tab.id, { message: "test" });
-    //         });
-    //     });
-    // });
 });
