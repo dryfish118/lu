@@ -466,8 +466,9 @@ function startWork() {
 
     $.ajax({
         url: url_userinfo,
-        dataType: "json",
-        success: function(data) {
+        dataType: "text",
+        success: function(rawData) {
+            data = $.parseJSON(rawData.substring(5, rawData.length - 1));
             if (data.uid === undefined) {
                 doLogin();
             } else {
