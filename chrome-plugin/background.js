@@ -380,7 +380,7 @@ function acquireAccount(result, money) {
         console.log("available money:\t%s", money.toFixed(2));
 
         var toMoney = getMaxMoney();
-        if (toMoney !== 0 && toMoney < money) {
+        if (toMoney !== 0 && toMoney != money) {
             console.log("use the max money:\t%d", toMoney);
             money = toMoney;
         }
