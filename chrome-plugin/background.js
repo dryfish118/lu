@@ -478,7 +478,7 @@ function startWork() {
                 g_uid = data.uid;
                 g_userName = data.userName;
                 g_mobileNo = data.mobileNo;
-                console.log("user id:\t%d", g_uid);
+                console.log("user id:\t%s", g_uid);
                 console.log("user name:\t%s", g_userName);
                 console.log("mobile:\t%s", g_mobileNo);
 

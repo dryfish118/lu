@@ -78,7 +78,7 @@ function parseProductListPage(minRate) {
     if (productList === undefined || productList.length === 0) {
         chrome.runtime.sendMessage({ message: "productlist", param1: "No" });
     } else {
-        sendLog("the valid rate is %s", minRate.toFixed(2));
+        sendLog("the valid rate is " + minRate.toFixed(2));
         var products = [];
         productList.each(function() {
             var product = LuProduct.createProduct();
@@ -142,21 +142,28 @@ function parseProductPage() {
         sendLog("done");
         chrome.runtime.sendMessage({ message: "product", param1: "No" });
     } else {
-        $("body").bind("DOMNodeInserted", function(e) {
-            //sendLog("DOMNodeInserted");
-            var obj = jQuery(e.target);
-            if (obj.hasClass("blockPage")) {
-                $("body").unbind("DOMNodeInserted");
-                sendLog("blockPage");
-                chrome.runtime.sendMessage({ message: "product", param1: "No" });
-            }
-        });
+        done = $("div .status-temp-full");
+        if (done !== undefined) {
+            sendLog("暂时募满");
+            sendLog("done");
+            chrome.runtime.sendMessage({ message: "product", param1: "No" });
+        } else {
+            $("body").bind("DOMNodeInserted", function(e) {
+                //sendLog("DOMNodeInserted");
+                var obj = jQuery(e.target);
+                if (obj.hasClass("blockPage")) {
+                    $("body").unbind("DOMNodeInserted");
+                    sendLog("blockPage");
+                    chrome.runtime.sendMessage({ message: "product", param1: "No" });
+                }
+            });
 
-        sendLog("trigger click");
-        var a = $("a[data-sk=lijitouzi]");
-        var lijitouzi = a.first();
-        $(lijitouzi).html("<span id='lijitouzi'>" + $(lijitouzi).html() + "</span>");
-        $("#lijitouzi").trigger("click");
+            sendLog("trigger click");
+            var a = $("a[data-sk=lijitouzi]");
+            var lijitouzi = a.first();
+            $(lijitouzi).html("<span id='lijitouzi'>" + $(lijitouzi).html() + "</span>");
+            $("#lijitouzi").trigger("click");
+        }
     }
 }
 
