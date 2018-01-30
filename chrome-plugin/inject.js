@@ -142,14 +142,13 @@ function parseProductPage() {
         sendLog("done");
         chrome.runtime.sendMessage({ message: "product", param1: "No" });
     } else {
-        done = $("div .status-temp-full");
-        if (done !== undefined) {
-            sendLog("暂时募满");
-            sendLog("done");
+        var status = $("div .status-temp-full");
+        if (status !== undefined && $(status).html() !== undefined) {
+            sendLog("status-temp-full");
             chrome.runtime.sendMessage({ message: "product", param1: "No" });
         } else {
             $("body").bind("DOMNodeInserted", function(e) {
-                //sendLog("DOMNodeInserted");
+                sendLog("DOMNodeInserted");
                 var obj = jQuery(e.target);
                 if (obj.hasClass("blockPage")) {
                     $("body").unbind("DOMNodeInserted");
