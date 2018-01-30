@@ -237,10 +237,10 @@ function injectSecurity() {
                 }
 
                 g_audio.pause();
-                g_audio.src = "beepboop.mp3";
-                g_audio.currentTime = 0;
-                g_audio.loop = true;
-                g_audio.play();
+                // g_audio.src = "beepboop.mp3";
+                // g_audio.currentTime = 0;
+                // g_audio.loop = true;
+                // g_audio.play();
 
                 g_workFlow = WorkFlow.WorkFlow_Idle;
                 console.log("WorkFlow_Idle");
@@ -315,14 +315,14 @@ function acquireProductList(result, urls) {
         g_workFlow = WorkFlow.WorkFlow_OpenProductPage;
         console.log("WorkFlow_OpenProductPage");
 
-        var i = 0;
-        for (; i < urls.length; i++) {
+        var i = urls.length - 1;
+        for (; i >= 0; i--) {
             if (!g_blackProducts.includes(urls[i])) {
                 break;
             }
         }
 
-        if (i === urls.length) {
+        if (i < 0) {
             console.log("all products are sold, refresh & restart after %d\".", getRefresh() / 1000);
             setTimeout(openProductListPage, getRefresh());
         } else {
