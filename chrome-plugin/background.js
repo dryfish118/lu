@@ -20,9 +20,6 @@ var g_workFlow = WorkFlow.WorkFlow_Idle;
 
 var g_terminate;
 var g_tab;
-var g_uid;
-var g_userName;
-var g_mobileNo;
 var g_fromMoney;
 var g_toMoney;
 var g_rate;
@@ -97,14 +94,6 @@ function getMinMoney() {
     }
 }
 
-function getStepMoney() {
-    if (localStorage.stepmoney === undefined || localStorage.stepmoney === "") {
-        return 500;
-    } else {
-        return parseInt(localStorage.stepmoney);
-    }
-}
-
 function getMinRate() {
     if (localStorage.minrate === undefined || localStorage.minrate === "") {
         return 4.8;
@@ -132,8 +121,6 @@ chrome.runtime.onMessage.addListener(function(request, _, sendResponse) {
             sendResponse(getMaxMoney());
         } else if (param1 === "minmoney") {
             sendResponse(getMinMoney());
-        } else if (param1 === "stepmoney") {
-            sendResponse(getStepMoney());
         } else if (param1 === "minrate") {
             sendResponse(getMinRate());
         }
@@ -359,7 +346,7 @@ function openProductListPage() {
     console.log("WorkFlow_OpenProductListPage (%s%% %d %d)", g_rate.toFixed(2), g_fromMoney, g_toMoney);
 
     g_nextUrl = url_r030;
-    var strData = "?currentPage=1&orderType=R030_INVEST_RATE&orderAsc=false&minMoney=" + g_fromMoney + "&maxMoney=" + g_toMoney;
+    var strData = "?currentPage=1&minMoney=" + g_fromMoney + "&maxMoney=" + g_toMoney;
     chrome.tabs.update(g_tab.id, { url: g_nextUrl + strData });
 }
 
@@ -380,7 +367,7 @@ function acquireAccount(result, money) {
         console.log("available money:\t%s", money.toFixed(2));
 
         var toMoney = getMaxMoney();
-        if (toMoney !== 0 && toMoney != money) {
+        if (toMoney !== 0 && toMoney < parseInt(money)) {
             console.log("use the max money:\t%d", toMoney);
             money = toMoney;
         }
@@ -395,9 +382,6 @@ function acquireAccount(result, money) {
                 console.log("WorkFlow_Idle");
                 return;
             }
-        }
-        if (g_fromMoney < g_toMoney - getStepMoney()) {
-            g_fromMoney = g_toMoney - getStepMoney();
         }
 
         g_rate = getMinRate();
@@ -475,12 +459,9 @@ function startWork() {
                 g_workFlow = WorkFlow.WorkFlow_AcquireUserInfo;
                 console.log("WorkFlow_AcquireUserInfo");
 
-                g_uid = data.uid;
-                g_userName = data.userName;
-                g_mobileNo = data.mobileNo;
-                console.log("user id:\t%s", g_uid);
-                console.log("user name:\t%s", g_userName);
-                console.log("mobile:\t%s", g_mobileNo);
+                console.log("user id:\t%s", data.uid);
+                console.log("user name:\t%s", data.userName);
+                console.log("mobile:\t%s", data.mobileNo);
 
                 g_workFlow = WorkFlow.WorkFlow_OpenAccountPage;
                 console.log("WorkFlow_OpenAccountPage");
