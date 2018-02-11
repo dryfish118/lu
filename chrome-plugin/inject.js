@@ -215,6 +215,7 @@ function parseSecurityPage(pass) {
     });
 
     $("#tradeCode").val(pass);
+    $("#inputValid").focus();
 }
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
