@@ -26,7 +26,6 @@ var g_rate;
 var g_nextUrl;
 var g_curProduct;
 var g_blackProducts;
-var g_audio = new Audio();
 
 var url_login = "https://user.lu.com/user/login";
 var url_userinfo = "https://user.lu.com/user/service/user/current-user-info-for-homepage";
@@ -219,16 +218,6 @@ function injectSecurity() {
     chrome.tabs.executeScript(g_tab.id, { file: "jquery.min.js" }, function() {
         chrome.tabs.executeScript(g_tab.id, { file: "inject.js" }, function() {
             chrome.tabs.sendMessage(g_tab.id, { message: "security", pass: getTradePass() }, null, function() {
-                if (window.Notification) {
-                    new Notification("Lu Trader Helper", { body: "Catch!!!" });
-                }
-
-                g_audio.pause();
-                // g_audio.src = "beepboop.mp3";
-                // g_audio.currentTime = 0;
-                // g_audio.loop = true;
-                // g_audio.play();
-
                 g_workFlow = WorkFlow.WorkFlow_Idle;
                 console.log("WorkFlow_Idle");
             });
